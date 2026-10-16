@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Bài tập tuần 5: mô hình hoá yêu cầu cho ứng dụng theo dõi sức khoẻ trên smartwatch và smartphone bằng sơ đồ use case, đặc tả use case, activity diagram và state chart diagram">
+  <title>Bài tập tuần 5: Ứng dụng theo dõi sức khoẻ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Lora:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #fbf7ef;
+      --paper-strong: #fffdf8;
+      --surface: #f2e8da;
+      --surface-deep: #e8dac7;
+      --ink: #302821;
+      --ink-soft: #695b4f;
+      --coffee: #70472f;
+      --coffee-dark: #40281d;
+      --caramel: #c6813e;
+      --sage: #68765d;
+      --sage-soft: #e1e7db;
+      --rose: #a24b3d;
+      --rose-soft: #f3dfd9;
+      --line: #d9caba;
+      --shadow: 0 18px 46px rgba(64, 40, 29, 0.11);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 84px; font-size: clamp(17px, 0.6vw + 9px, 21px); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: radial-gradient(circle at 7% 0%, rgba(198, 129, 62, 0.11), transparent 28rem), linear-gradient(180deg, #f5ede2, var(--paper) 32rem);
+      font-family: "Be Vietnam Pro", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .shell { width: min(1200px, calc(100% - 48px)); margin: 0 auto; }
+    h1, h2, h3 { font-family: "Lora", serif; color: var(--coffee-dark); line-height: 1.25; margin: 0; }
+    h3 { font-size: 1.08rem; margin-bottom: 8px; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 12px; padding-left: 22px; }
+    li { margin-bottom: 4px; }
+    code { background: var(--surface); padding: 1px 6px; border-radius: 6px; font-size: 0.9em; }
+    a { color: var(--coffee); }
+
+    /* điều hướng */
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(255, 253, 248, 0.92); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-in { width: min(1200px, calc(100% - 48px)); margin: 0 auto; display: flex; align-items: center; gap: 24px; height: 64px; }
+    .nav .brand { display: flex; align-items: center; gap: 10px; flex: none; color: var(--coffee-dark); font-weight: 800; font-size: 0.9rem; text-decoration: none; }
+    .nav .mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--coffee-dark); color: #fffaf3; font-family: "Lora", serif; font-size: 0.85rem; }
+    .nav .week { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--caramel); border: 1px solid var(--caramel); border-radius: 999px; padding: 1px 9px; }
+    .nav ul { list-style: none; display: flex; gap: 2px; margin: 0 0 0 auto; padding: 0; overflow-x: auto; scrollbar-width: none; }
+    .nav li { margin: 0; }
+    .nav a.lnk { position: relative; display: block; padding: 18px 10px; white-space: nowrap; color: var(--ink-soft); text-decoration: none; font-size: 0.84rem; font-weight: 600; }
+    .nav a.lnk i { font-style: normal; font-size: 0.7rem; font-weight: 800; color: var(--caramel); margin-right: 6px; }
+    .nav a.lnk:hover, .nav a.lnk.on { color: var(--coffee-dark); }
+    .nav a.lnk.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--caramel); }
+    .nav .progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; background: var(--coffee); }
+    @media (max-width: 760px) { .nav .week, .nav .brand span.t { display: none; } .nav-in { gap: 10px; } }
+
+    .hero {
+      margin-top: 16px; padding: clamp(36px, 6vw, 64px);
+      border-radius: 28px; color: #fffaf3;
+      background: linear-gradient(120deg, #2f261f, #4d3022); box-shadow: var(--shadow);
+    }
+    .hero .eyebrow { color: #e5b784; }
+    .hero h1 { color: #fffaf3; font-size: clamp(2rem, 5vw, 3.2rem); margin: 8px 0 14px; }
+    .hero p { max-width: 760px; color: #eadccb; font-size: 1.05rem; margin: 0; }
+    .eyebrow { font-size: 0.76rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--caramel); margin: 0 0 6px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .chip { padding: 5px 13px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.84rem; font-weight: 600; color: #fffaf3; text-decoration: none; }
+    .chip:hover { background: rgba(255, 255, 255, 0.12); }
+
+    .lesson { margin: 56px 0; }
+    .lh { display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; align-items: baseline; margin-bottom: 22px; }
+    .lh .num { grid-row: 1 / span 2; font-family: "Lora", serif; font-size: 3.2rem; line-height: 1; color: var(--caramel); font-weight: 700; }
+    .lh h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); }
+    .lh .lead { grid-column: 2; color: var(--ink-soft); margin: 0; max-width: 820px; }
+
+    .card { background: var(--paper-strong); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; box-shadow: 0 6px 20px rgba(64, 40, 29, 0.05); }
+    .card.sage { background: var(--sage-soft); border-color: #c7d1bd; }
+    .card.rose { background: var(--rose-soft); border-color: #e4bfb5; }
+    .card h3 { margin-top: 0; }
+    .card :last-child { margin-bottom: 0; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .mt { margin-top: 18px; }
+
+    .ic { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.18em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    h3 .ic, .eyebrow .ic { color: var(--caramel); margin-right: 0.4em; }
+    .card.sage h3 .ic { color: var(--sage); }
+    .card.rose h3 .ic { color: var(--rose); }
+
+    .brief p { font-size: 1.02rem; }
+    .brief .formula { margin: 14px 0 0; padding: 12px 16px; border-left: 4px solid var(--caramel); background: var(--surface); border-radius: 0 12px 12px 0; }
+    .brief .formula p { margin: 0 0 4px; font-weight: 600; }
+    .brief .formula p:last-child { margin: 0; }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper-strong); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: var(--surface); color: var(--coffee-dark); font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; white-space: nowrap; }
+    .blank td { height: 2.6rem; color: var(--ink-soft); font-style: italic; }
+
+    .diagram { background: var(--paper-strong); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; }
+    .diagram svg { display: block; width: 100%; height: auto; }
+    svg text { font-family: "Be Vietnam Pro", "Noto Sans", sans-serif; font-size: 15px; fill: var(--ink); }
+    svg .small { font-size: 13px; fill: var(--ink-soft); }
+    svg .bold { font-weight: 700; }
+    svg .box { fill: var(--paper-strong); stroke: var(--coffee); stroke-width: 1.8; }
+    svg .box.alt { fill: var(--sage-soft); stroke: var(--sage); }
+    svg .base { fill: rgba(242, 232, 218, 0.55); stroke: var(--caramel); stroke-width: 1.6; stroke-dasharray: 7 5; }
+    svg .arrow { fill: none; stroke: var(--coffee-dark); stroke-width: 1.8; }
+
+    label.chk { display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem; cursor: pointer; margin-bottom: 8px; }
+    label.chk input { margin-top: 0.4em; accent-color: var(--coffee); }
+
+    @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+    @media print {
+      .nav { display: none; }
+      .lesson { margin: 28px 0; }
+      .card, .table-wrap, .diagram { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top"><span class="mark">SE</span><span class="t">Công nghệ phần mềm</span><span class="week">Bài tập tuần 5</span></a>
+    <ul>
+      <li><a class="lnk" href="#de-bai"><i>01</i>Đề bài</a></li>
+      <li><a class="lnk" href="#san-pham"><i>02</i>Sản phẩm nộp</a></li>
+      <li><a class="lnk" href="#gia-dinh"><i>03</i>Giả định</a></li>
+      <li><a class="lnk" href="#usecase"><i>04</i>Use case</a></li>
+      <li><a class="lnk" href="#dac-ta"><i>05</i>Đặc tả</a></li>
+      <li><a class="lnk" href="#activity"><i>06</i>Activity</a></li>
+      <li><a class="lnk" href="#state"><i>07</i>State chart</a></li>
+      <li><a class="lnk" href="#nhat-quan"><i>08</i>Nhất quán</a></li>
+      <li><a class="lnk" href="#nop-bai"><i>09</i>Nộp bài</a></li>
+    </ul>
+  </div>
+  <div class="progress" id="progress"></div>
+</nav>
+<div class="shell" id="top">
+
+  <header class="hero">
+    <p class="eyebrow">Bài tập tuần 5</p>
+    <h1>Mô hình hoá yêu cầu cho ứng dụng theo dõi sức khoẻ</h1>
+    <p>Hệ thống gồm hai phân hệ chạy trên hai thiết bị: đồng hồ thông minh và điện thoại. Từ đề bài của khách hàng, sinh viên dựng bốn sản phẩm: sơ đồ use case, đặc tả hai use case, activity diagram và state chart diagram. Ký pháp và cách dựng theo <a href="../w4/index.html" style="color:#f1c995">bài giảng tuần 4</a>.</p>
+    <div class="chips">
+      <a class="chip" href="#usecase">Sơ đồ use case</a>
+      <a class="chip" href="#dac-ta">Đặc tả hai use case</a>
+      <a class="chip" href="#activity">Activity diagram</a>
+      <a class="chip" href="#state">State chart diagram</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- 01 ĐỀ BÀI -->
+    <section class="lesson" id="de-bai">
+      <div class="lh">
+        <span class="num">01</span>
+        <h2>Đề bài: ứng dụng theo dõi sức khoẻ</h2>
+        <p class="lead">Đề viết bằng ngôn ngữ tự nhiên, như lời của stakeholder. Đề có chỗ chưa rõ; cách xử lý ở mục 03. Hệ thống chạy trên hai thiết bị, nên mỗi chức năng phải được xác định thuộc phân hệ nào.</p>
+      </div>
+      <div class="card brief">
+        <p>Ngày nay, sự ra đời của đồng hồ thông minh có tích hợp GPS và các cảm biến về chuyển động, nhịp tim đã mang đến cho người dùng nhiều tiện ích về sức khỏe, giúp theo dõi quá trình hoạt động thể chất và rèn luyện thể thao. Là trưởng nhóm phát triển ứng dụng theo dõi sức khoẻ, sinh viên cần xây dựng hệ thống phần mềm gồm hai phân hệ: phân hệ trên đồng hồ thông minh (phân hệ smartwatch), có nhiệm vụ theo dõi, ghi nhận tức thời các thông số sức khoẻ của người dùng trong quá trình diễn ra các hoạt động thể chất (đi bộ, chạy bộ, đạp xe, bơi lội, …); và phân hệ trên điện thoại di động (phân hệ smartphone), có nhiệm vụ phân tích, thống kê, tạo lịch biểu và nhắc nhở các hoạt động thể chất cho người dùng.</p>
+        <p>Khi người dùng đeo đồng hồ thông minh bắt đầu một hoạt động thể chất, phân hệ smartwatch trên đồng hồ sẽ tự động nhận biết hoạt động đang diễn ra (đi bộ, chạy bộ, đạp xe, bơi lội, …) và kích hoạt chức năng theo dõi thông tin sức khỏe hiện thời. Thông qua các cảm biến trên đồng hồ, phân hệ smartwatch sẽ ghi nhận và hiển thị những thông tin hiện thời của hoạt động thể chất bao gồm: quãng đường, thời gian di chuyển, tốc độ trung bình, nhịp tim hiện tại. Khi muốn kết thúc hoạt động thể chất, người dùng ra lệnh trên đồng hồ, phân hệ smartwatch sẽ ngừng việc theo dõi và ghi nhận thông tin.</p>
+        <p>Những thông tin sức khỏe của hoạt động thể chất được lưu trữ tạm thời trên phân hệ smartwatch sẽ được tự động đồng bộ, tải lên phân hệ smartphone qua kết nối Bluetooth khi hai thiết bị đồng hồ và điện thoại ghép đôi (pairing) với nhau. Phân hệ smartphone hỗ trợ người dùng chia sẻ kết quả của một hoạt động thể chất vừa thực hiện lên các mạng xã hội Facebook, Twitter, Instagram, …</p>
+        <p>Với phân hệ smartphone, người dùng có thể xem thông tin tổng hợp về những hoạt động thể chất đã thực hiện từ trước đến nay gồm: danh sách các hoạt động được sắp xếp theo trình tự thời gian, tổng số hoạt động, tổng quãng đường đã di chuyển được thống kê theo tuần, tháng, và năm. Người dùng có thể lựa chọn xem phân tích thống kê cụ thể về một hoạt động thể chất nào đó trong danh sách. Khi đó, ứng dụng sẽ thể hiện lộ trình di chuyển của hoạt động, kèm bản đồ trực quan được cung cấp bởi một dịch vụ bản đồ trung gian (map service), các thống kê tổng quát gồm: tổng thời gian, tổng quãng đường di chuyển, lượng calo tiêu thụ, độ cao thay đổi trong quá trình di chuyển. Người dùng có thể tiếp tục lựa chọn xem các thống kê chi tiết về tốc độ hoặc nhịp tim, bao gồm: tốc độ/nhịp tim trung bình trên toàn lộ trình di chuyển, tốc độ/nhịp tim chi tiết theo từng km, biểu đồ thay đổi tốc độ/nhịp tim theo thời gian.</p>
+        <p>Ngoài ra, phân hệ smartphone cũng hỗ trợ người dùng tạo lịch biểu cho các hoạt động thể chất có tính chất lặp đi lặp lại. Khi sắp tới thời điểm thực hiện hoạt động theo lịch biểu, ứng dụng sẽ đưa ra nhắc nhở cần thiết. Thông tin cơ bản của một lịch biểu bao gồm: tên hoạt động thể chất, loại hoạt động (đi bộ, chạy bộ, đạp xe, bơi lội, hoặc khác), tần suất thực hiện hoạt động (mỗi ngày hoặc một vài ngày trong tuần), có nhắc nhở hay không, nhắc trước bao nhiêu phút. Người dùng có thể đặt mục tiêu cần đạt được cho hoạt động theo các tiêu chí: quãng đường, thời gian, tốc độ trung bình. Khi người dùng không đạt được mục tiêu, ứng dụng sẽ đưa ra lời khuyên để người dùng cố gắng hơn hoặc điều chỉnh lại mục tiêu cho phù hợp.</p>
+      </div>
+
+      <h3 class="mt"><span data-icon="layers"></span>Bối cảnh triển khai</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 960 220" role="img" aria-label="Phân hệ smartwatch gửi dữ liệu hoạt động sang phân hệ smartphone qua Bluetooth khi hai thiết bị đã ghép đôi. Phân hệ smartphone lấy bản đồ từ dịch vụ bản đồ và đưa kết quả hoạt động lên mạng xã hội">
+          <defs>
+            <marker id="ar0" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto"><path d="M0 0L10 5L0 10z" fill="#40281d"/></marker>
+          </defs>
+          <rect class="box" x="20" y="50" width="250" height="120" rx="14"/>
+          <text class="bold" x="145" y="84" text-anchor="middle">Phân hệ smartwatch</text>
+          <text class="small" x="145" y="108" text-anchor="middle">GPS, cảm biến chuyển động,</text>
+          <text class="small" x="145" y="126" text-anchor="middle">cảm biến nhịp tim;</text>
+          <text class="small" x="145" y="144" text-anchor="middle">lưu tạm thông tin hoạt động</text>
+
+          <rect class="box" x="360" y="50" width="250" height="120" rx="14"/>
+          <text class="bold" x="485" y="84" text-anchor="middle">Phân hệ smartphone</text>
+          <text class="small" x="485" y="108" text-anchor="middle">phân tích, thống kê,</text>
+          <text class="small" x="485" y="126" text-anchor="middle">lịch biểu, mục tiêu,</text>
+          <text class="small" x="485" y="144" text-anchor="middle">nhắc nhở, chia sẻ</text>
+
+          <rect class="box alt" x="700" y="20" width="240" height="60" rx="14"/>
+          <text class="bold" x="820" y="46" text-anchor="middle">Dịch vụ bản đồ</text>
+          <text class="small" x="820" y="66" text-anchor="middle">(map service)</text>
+
+          <rect class="box alt" x="700" y="140" width="240" height="60" rx="14"/>
+          <text class="bold" x="820" y="166" text-anchor="middle">Mạng xã hội</text>
+          <text class="small" x="820" y="186" text-anchor="middle">Facebook, Twitter, Instagram, …</text>
+
+          <path class="arrow" d="M270 110H356" marker-end="url(#ar0)"/>
+          <text class="small" x="313" y="98" text-anchor="middle">Bluetooth</text>
+          <text class="small" x="313" y="134" text-anchor="middle">đã ghép đôi</text>
+          <path class="arrow" d="M610 90L696 62" marker-end="url(#ar0)"/>
+          <path class="arrow" d="M610 130L696 158" marker-end="url(#ar0)"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 02 SẢN PHẨM NỘP -->
+    <section class="lesson" id="san-pham">
+      <div class="lh">
+        <span class="num">02</span>
+        <h2>Sản phẩm phải nộp</h2>
+        <p class="lead">Bốn mô hình và một bảng giả định, dựng trên cùng một đề bài. Các mô hình phải khớp nhau, nên làm theo thứ tự trong sơ đồ.</p>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 960 250" role="img" aria-label="Thứ tự làm các sản phẩm: sơ đồ use case, đặc tả use case, rồi activity diagram và state chart, cuối cùng là kiểm tra nhất quán. Bảng giả định áp dụng cho cả bốn mô hình">
+          <defs>
+            <marker id="ar" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto"><path d="M0 0L10 5L0 10z" fill="#40281d"/></marker>
+          </defs>
+          <rect class="box" x="20" y="60" width="200" height="70" rx="14"/>
+          <text class="bold" x="120" y="90" text-anchor="middle">1. Sơ đồ use case</text>
+          <text class="small" x="120" y="112" text-anchor="middle">hai phân hệ</text>
+
+          <rect class="box" x="270" y="60" width="200" height="70" rx="14"/>
+          <text class="bold" x="370" y="90" text-anchor="middle">2. Đặc tả use case</text>
+          <text class="small" x="370" y="112" text-anchor="middle">hai use case</text>
+
+          <rect class="box" x="520" y="14" width="200" height="70" rx="14"/>
+          <text class="bold" x="620" y="44" text-anchor="middle">3. Activity diagram</text>
+          <text class="small" x="620" y="66" text-anchor="middle">một use case đã đặc tả</text>
+
+          <rect class="box" x="520" y="106" width="200" height="70" rx="14"/>
+          <text class="bold" x="620" y="136" text-anchor="middle">4. State chart</text>
+          <text class="small" x="620" y="158" text-anchor="middle">Hoạt động thể chất</text>
+
+          <rect class="box alt" x="770" y="60" width="170" height="70" rx="14"/>
+          <text class="bold" x="855" y="90" text-anchor="middle">5. Kiểm tra</text>
+          <text class="small" x="855" y="112" text-anchor="middle">danh sách nhất quán</text>
+
+          <path class="arrow" d="M220 95H266" marker-end="url(#ar)"/>
+          <path class="arrow" d="M470 78L516 55" marker-end="url(#ar)"/>
+          <path class="arrow" d="M470 112L516 135" marker-end="url(#ar)"/>
+          <path class="arrow" d="M720 55L766 80" marker-end="url(#ar)"/>
+          <path class="arrow" d="M720 135L766 110" marker-end="url(#ar)"/>
+
+          <rect class="base" x="20" y="198" width="920" height="40" rx="12"/>
+          <text class="bold" x="480" y="223" text-anchor="middle">Bảng giả định: ghi khi gặp chỗ đề chưa rõ, áp dụng cho cả bốn mô hình</text>
+        </svg>
+      </div>
+
+      <h3 class="mt"><span data-icon="layers"></span>Danh sách sản phẩm</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sản phẩm</th><th>Phạm vi</th><th>Nội dung chính</th><th>Xem lại trong bài giảng</th></tr></thead>
+          <tbody>
+            <tr><td><b>1. Sơ đồ use case</b></td><td>Toàn bộ ứng dụng, cả hai phân hệ</td><td>Actor, use case, ranh giới từng phân hệ, association, include, extend</td><td><a href="../w4/index.html#usecase">Mục 02</a></td></tr>
+            <tr><td><b>2. Đặc tả use case</b></td><td>Hai use case do sinh viên chọn, theo ràng buộc ở mục 05</td><td>Bản đặc tả theo mẫu, có luồng chính, luồng thay thế, luồng ngoại lệ và quy tắc nghiệp vụ</td><td><a href="../w4/index.html#dac-ta">Mục 03</a></td></tr>
+            <tr><td><b>3. Activity diagram</b></td><td>Một trong hai use case đã đặc tả</td><td>Swimlane, decision, merge; fork và join khi có việc độc lập; bảng truy vết về đặc tả</td><td><a href="../w4/index.html#activity">Mục 04</a></td></tr>
+            <tr><td><b>4. State chart diagram</b></td><td>Đối tượng Hoạt động thể chất</td><td>Trạng thái, sự kiện, guard, action; bảng chuyển trạng thái; các cặp (trạng thái, sự kiện) bị từ chối</td><td><a href="../w4/index.html#state">Mục 05</a></td></tr>
+            <tr><td><b>5. Giả định và kiểm tra</b></td><td>Cả bốn mô hình</td><td>Bảng giả định; danh sách kiểm tra nhất quán</td><td><a href="../w4/index.html#tong-ket">Mục 06</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 03 GIẢ ĐỊNH -->
+    <section class="lesson" id="gia-dinh">
+      <div class="lh">
+        <span class="num">03</span>
+        <h2>Bảng giả định</h2>
+        <p class="lead">Đề bài có chỗ chưa nói rõ hoặc nói chưa nhất quán. Khi gặp chỗ như vậy, sinh viên ghi một giả định và dùng giả định đó trong các mô hình.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card sage">
+          <h3><span data-icon="circle-check"></span>Yêu cầu với bảng giả định</h3>
+          <ul>
+            <li>Ít nhất 5 giả định, không tính dòng ví dụ bên dưới.</li>
+            <li>Mỗi giả định ghi: mã (GĐ-01, GĐ-02, …), chỗ đề chưa rõ, giả định của bài làm, mô hình bị ảnh hưởng.</li>
+            <li>Giả định không mâu thuẫn với câu chữ của đề và không dùng để bỏ bớt yêu cầu đã có trong đề.</li>
+            <li>Mỗi giả định phải xuất hiện cụ thể trong ít nhất một mô hình: một quy tắc nghiệp vụ, một guard, một luồng thay thế hoặc một trạng thái.</li>
+            <li>Ít nhất 1 giả định liên quan đến việc hai thiết bị trao đổi dữ liệu với nhau (ghép đôi, đồng bộ, mất kết nối).</li>
+          </ul>
+        </div>
+        <div class="card rose">
+          <h3><span data-icon="triangle-alert"></span>Cách tìm chỗ chưa rõ</h3>
+          <p>Đọc đề theo từng trường hợp biên và hỏi tình huống nào đề chưa xử lý. Các nhóm câu hỏi dưới đây dùng được cho cả đề này lẫn đề khác:</p>
+          <ul>
+            <li>Giá trị biên: bằng, lớn hơn hay nhỏ hơn thì xử lý ra sao?</li>
+            <li>Không có dữ liệu: mất tín hiệu GPS, chưa ghép đôi, chưa có hoạt động nào thì sao?</li>
+            <li>Quá hạn hoặc không làm: không đồng bộ được, bỏ qua một lần nhắc thì sao?</li>
+            <li>Thông tin đề không nêu: ai làm, khi nào, báo bằng cách nào, tính theo công thức nào?</li>
+            <li>Dữ liệu có đủ để thực hiện yêu cầu không? Ví dụ: một chức năng cần thông tin mà phần mô tả dữ liệu của đề chưa liệt kê.</li>
+          </ul>
+        </div>
+      </div>
+      <h3 class="mt"><span data-icon="lightbulb"></span>Mẫu bảng</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mã</th><th>Chỗ đề chưa rõ</th><th>Giả định của bài làm</th><th>Ảnh hưởng đến</th></tr></thead>
+          <tbody>
+            <tr><td>GĐ-00 (ví dụ)</td><td>Quãng đường thực tế đúng bằng mục tiêu quãng đường. Đề chỉ nêu trường hợp "không đạt được mục tiêu".</td><td>Mục tiêu quãng đường được coi là đạt khi quãng đường thực tế lớn hơn hoặc bằng mục tiêu. Quy ước này áp dụng cho cả mục tiêu tốc độ trung bình.</td><td>Guard của decision trong activity diagram; quy tắc nghiệp vụ đánh giá mục tiêu</td></tr>
+            <tr class="blank"><td>GĐ-01</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 04 USE CASE -->
+    <section class="lesson" id="usecase">
+      <div class="lh">
+        <span class="num">04</span>
+        <h2>Yêu cầu 1: sơ đồ use case</h2>
+        <p class="lead">Một sơ đồ cho toàn bộ ứng dụng, bao phủ các chức năng đề nêu ở cả hai phân hệ, từ lúc bắt đầu hoạt động trên đồng hồ đến lúc nhắc nhở và đánh giá mục tiêu trên điện thoại.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card sage">
+          <h3><span data-icon="circle-check"></span>Sơ đồ phải có</h3>
+          <ul>
+            <li><b>Actor:</b> các vai trò dùng hệ thống và hệ thống ngoài mà ứng dụng phải gọi. Tên là vai trò, không phải tên một người cụ thể hoặc một thiết bị cụ thể.</li>
+            <li><b>Use case:</b> tên gồm động từ và đối tượng, mỗi use case là một mục tiêu trọn vẹn của actor. Không dùng các tên thao tác kỹ thuật như Thêm, Sửa, Xoá.</li>
+            <li><b>Ranh giới hệ thống:</b> hai ranh giới, mỗi phân hệ một hộp. Use case đặt vào đúng phân hệ thực hiện nó, actor nằm ngoài các hộp.</li>
+            <li><b>Association:</b> mỗi actor nối với ít nhất một use case. Mỗi use case có ít nhất một actor nối, hoặc là đích của quan hệ include hoặc extend.</li>
+            <li><b>Include:</b> ít nhất một quan hệ, dùng cho hành vi chạy mỗi lần use case gốc chạy.</li>
+            <li><b>Extend:</b> ít nhất một quan hệ, ghi điều kiện kích hoạt trên mũi tên.</li>
+            <li>Mũi tên include và extend đúng chiều như bài giảng.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span data-icon="circle-help"></span>Câu hỏi tự kiểm tra</h3>
+          <ul>
+            <li>Chức năng nào trong đề do thời gian hoặc do kết nối giữa hai thiết bị kích hoạt chứ không do người dùng? Actor của nó là ai, hay không có actor?</li>
+            <li>Người dùng ra lệnh trên đồng hồ và người dùng thao tác trên điện thoại là một actor hay hai actor? Vì sao?</li>
+            <li>Hệ thống ngoài nào tham gia, và use case nào làm việc với nó?</li>
+            <li>Chức năng nào cần cả hai phân hệ cùng tham gia? Đặt nó ở hộp nào và hộp còn lại có phải là actor không?</li>
+            <li>Kết thúc use case, actor nhận được kết quả gì có giá trị?</li>
+            <li>Use case gốc có trọn vẹn khi bỏ phần mở rộng không? Nếu không, quan hệ đó có thể là include.</li>
+            <li>Include hoặc extend có đang được dùng để chia một use case thành các bước không? Các bước thuộc về đặc tả.</li>
+          </ul>
+        </div>
+      </div>
+      <h3 class="mt">Phần kèm theo sơ đồ: ghi chú quan hệ</h3>
+      <p>Mỗi quan hệ include và extend có một dòng giải thích, theo mẫu:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Loại</th><th>Use case gốc</th><th>Use case được bao gồm hoặc mở rộng</th><th>Lý do chọn quan hệ này; với extend, ghi điều kiện</th></tr></thead>
+          <tbody>
+            <tr class="blank"><td>include hoặc extend</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt">Mỗi use case cần cả hai phân hệ cùng tham gia có một dòng giải thích vì sao đặt vào phân hệ đó:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Use case</th><th>Phân hệ đặt use case</th><th>Vai trò của phân hệ còn lại</th><th>Lý do</th></tr></thead>
+          <tbody>
+            <tr class="blank"><td></td><td>smartwatch hoặc smartphone</td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 05 ĐẶC TẢ -->
+    <section class="lesson" id="dac-ta">
+      <div class="lh">
+        <span class="num">05</span>
+        <h2>Yêu cầu 2: đặc tả hai use case quan trọng</h2>
+        <p class="lead">Chọn hai use case từ sơ đồ ở yêu cầu 1 và đặc tả đầy đủ theo mẫu của bài giảng.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3><span data-icon="pencil-line"></span>Cách chọn hai use case</h3>
+          <ul>
+            <li>Use case quan trọng là use case mà nếu thiếu thì ứng dụng không thực hiện được mục đích theo dõi hoạt động thể chất trên đồng hồ và phân tích kết quả trên điện thoại.</li>
+            <li>Không chọn Chia sẻ kết quả lên mạng xã hội và Xem danh sách hoạt động, vì các use case này ít có quy tắc riêng của đề.</li>
+            <li>Mỗi use case chọn viết 2 đến 3 câu giải thích lý do chọn, dựa vào đề.</li>
+            <li>Hai use case chọn phải khác nhau về mục tiêu và về cách được kích hoạt (người dùng, thời gian hoặc kết nối giữa hai thiết bị), không phải hai biến thể của cùng một chức năng.</li>
+            <li>Hai use case không cùng nằm trong một hộp phân hệ trên sơ đồ ở yêu cầu 1.</li>
+          </ul>
+        </div>
+        <div class="card sage">
+          <h3><span data-icon="circle-check"></span>Mức tối thiểu cho mỗi đặc tả</h3>
+          <ul>
+            <li>Đủ 14 mục của mẫu (bảng bên dưới).</li>
+            <li>Ít nhất 2 luồng thay thế và 1 luồng ngoại lệ.</li>
+            <li>Mỗi quy tắc nêu trong đề mà liên quan đến use case phải thành bước hoặc quy tắc nghiệp vụ có mã BR, ghi đúng đại lượng và đơn vị theo đề (km, phút, km/h, lần).</li>
+            <li>Quy tắc hoặc giá trị lấy từ giả định ghi rõ mã GĐ tương ứng, kể cả công thức tính một đại lượng mà đề không nêu công thức.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="mt">Mẫu đặc tả</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mục</th><th>Yêu cầu</th></tr></thead>
+          <tbody>
+            <tr><td><b>Mã và tên</b></td><td>Mã dạng UC-01. Tên giống với tên trên sơ đồ use case.</td></tr>
+            <tr><td><b>Mô tả tóm tắt</b></td><td>1 đến 2 câu: use case làm gì, cho ai, đạt mục tiêu gì. Không chép lại luồng sự kiện.</td></tr>
+            <tr><td><b>Actor chính</b></td><td>Khớp với actor nối với use case trong sơ đồ. Use case do thời gian hoặc thiết bị kích hoạt mà không có actor người thì ghi rõ bên kích hoạt.</td></tr>
+            <tr><td><b>Actor phụ</b></td><td>Hệ thống hoặc vai trò giúp use case hoàn thành nhưng không khởi động nó. Nếu không có thì ghi "Không có".</td></tr>
+            <tr><td><b>Kích hoạt</b></td><td>Sự kiện làm use case bắt đầu. Ghi sự kiện, không ghi giao diện.</td></tr>
+            <tr><td><b>Tiền điều kiện</b></td><td>Điều phải đúng trước khi use case bắt đầu. Điều có thể sai và cần xử lý thì chuyển thành luồng thay thế.</td></tr>
+            <tr><td><b>Hậu điều kiện (thành công)</b></td><td>Thay đổi dữ liệu quan sát được khi use case kết thúc thành công. Tên trạng thái phải trùng với tên trong state chart.</td></tr>
+            <tr><td><b>Hậu điều kiện (thất bại)</b></td><td>Trạng thái hệ thống khi use case thất bại. Bắt buộc ghi, kể cả khi giống trạng thái ban đầu.</td></tr>
+            <tr><td><b>Luồng chính</b></td><td>Đánh số 1, 2, 3. Mỗi bước có một chủ thể và một hành động. Không chứa câu "nếu". Không nêu cách lưu dữ liệu hoặc mô tả giao diện.</td></tr>
+            <tr><td><b>Luồng thay thế</b></td><td>Đánh số theo bước rẽ nhánh, ví dụ <code>3a</code>, <code>5a</code>. Mỗi luồng ghi điều kiện, hành động và bước quay về hoặc cách kết thúc.</td></tr>
+            <tr><td><b>Luồng ngoại lệ</b></td><td>Lỗi khiến use case không đạt mục tiêu. Mỗi ngoại lệ dẫn đến hậu điều kiện thất bại.</td></tr>
+            <tr><td><b>Quy tắc nghiệp vụ</b></td><td>Mã BR-01, BR-02, … dẫn vào bước liên quan, kèm nguồn (câu trong đề hoặc mã giả định).</td></tr>
+            <tr><td><b>Yêu cầu phi chức năng</b></td><td>Lấy từ đề hoặc từ giả định, viết thành đại lượng kiểm chứng được (đối tượng, ngưỡng, điều kiện đo). Cụm "tức thời" trong đề phải được đổi thành ngưỡng cụ thể và ghi mã GĐ. Nếu không có thì ghi "Không có".</td></tr>
+            <tr><td><b>Include, extend</b></td><td>Khớp với mũi tên trên sơ đồ use case.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 06 ACTIVITY -->
+    <section class="lesson" id="activity">
+      <div class="lh">
+        <span class="num">06</span>
+        <h2>Yêu cầu 3: activity diagram</h2>
+        <p class="lead">Dựng từ một trong hai use case đã đặc tả. Sơ đồ phải khớp với luồng chính, luồng thay thế và luồng ngoại lệ của bản đặc tả đó.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card sage">
+          <h3><span data-icon="workflow"></span>Sơ đồ phải có</h3>
+          <ul>
+            <li>Ghi rõ sơ đồ dựng từ use case nào.</li>
+            <li><b>Swimlane:</b> ít nhất 2 làn, mỗi làn là một actor hoặc bộ phận. Use case có cả hai phân hệ tham gia thì mỗi phân hệ một làn. Actor phụ tham gia use case thì có làn riêng.</li>
+            <li>Một điểm bắt đầu, ứng với kích hoạt của use case. Các điểm kết thúc ứng với hậu điều kiện thành công và thất bại.</li>
+            <li><b>Hành động:</b> tên là động từ ngắn, nằm đúng làn của người hoặc hệ thống thực hiện.</li>
+            <li><b>Decision</b> có guard trong ngoặc vuông ở mỗi luồng ra. Các guard loại trừ nhau và đủ trường hợp.</li>
+            <li><b>Merge</b> ở nơi nhiều luồng gom lại hoặc luồng quay về bước trước.</li>
+            <li><b>Fork và join:</b> chỉ vẽ khi có hai việc độc lập thật, mỗi fork có join tương ứng. Nếu use case không có việc song song, ghi 1 đến 2 câu giải thích vì sao không dùng.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span data-icon="circle-help"></span>Câu hỏi tự kiểm tra</h3>
+          <ul>
+            <li>Từng đường đi có đến được điểm kết thúc không? Có vòng lặp nào không thoát ra được không?</li>
+            <li>Mỗi bước của luồng chính đã có hành động chưa?</li>
+            <li>Từng luồng thay thế và luồng ngoại lệ đã có nhánh decision tương ứng chưa?</li>
+            <li>Hành động nào chưa rõ ai làm: người dùng, đồng hồ, điện thoại hay hệ thống ngoài?</li>
+            <li>Hai việc định đặt song song có thật sự không phụ thuộc nhau không? Việc A có cần kết quả của việc B để bắt đầu không?</li>
+          </ul>
+        </div>
+      </div>
+      <h3 class="mt">Phần kèm theo sơ đồ: bảng truy vết</h3>
+      <p>Mỗi luồng thay thế và luồng ngoại lệ của đặc tả có một dòng, theo mẫu ở mục 04 của bài giảng:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Trong đặc tả</th><th>Trong activity diagram</th></tr></thead>
+          <tbody>
+            <tr class="blank"><td>Mã luồng và điều kiện, ví dụ 3a</td><td>Decision, guard, hành động và merge tương ứng</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 07 STATE -->
+    <section class="lesson" id="state">
+      <div class="lh">
+        <span class="num">07</span>
+        <h2>Yêu cầu 4: state chart diagram</h2>
+        <p class="lead">Đối tượng bắt buộc là Hoạt động thể chất, từ lúc đồng hồ bắt đầu theo dõi đến khi thông tin của hoạt động đã được đồng bộ lên điện thoại và bản lưu tạm trên đồng hồ hết vai trò.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card sage">
+          <h3><span data-icon="repeat"></span>Sơ đồ phải có</h3>
+          <ul>
+            <li><b>Trạng thái:</b> đặt tên bằng tính từ hoặc cụm "đã, đang, chờ". Hai trạng thái khác nhau phải cho phép các sự kiện khác nhau.</li>
+            <li><b>Điểm bắt đầu</b> cho biết hoạt động sinh ra ở trạng thái nào. <b>Điểm kết thúc</b> nối từ các trạng thái cuối.</li>
+            <li>Vòng đời phủ: lúc đang theo dõi trên đồng hồ, sau khi người dùng ra lệnh kết thúc và thông tin được lưu tạm, lúc đồng bộ qua Bluetooth, trường hợp kết nối bị ngắt giữa chừng, và lúc đã đồng bộ xong.</li>
+            <li>Mỗi chuyển trạng thái có nhãn <code>sự kiện [guard] / action</code>. Dùng guard ở những chuyển có điều kiện thật trong đề, ví dụ điều kiện hai thiết bị đã ghép đôi.</li>
+            <li>Mỗi sự kiện ghi nguồn: một use case trong sơ đồ yêu cầu 1, một thiết bị (đồng hồ hoặc điện thoại, ghi rõ thiết bị nào), hoặc thời gian.</li>
+            <li>Action là việc quan sát được, gồm việc ghi nhận thông tin hoạt động và việc chuyển thông tin đó sang điện thoại.</li>
+            <li>Từ mỗi trạng thái có đường đến điểm kết thúc, và trạng thái nào đã vào thì ra được.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span data-icon="circle-help"></span>Câu hỏi tự kiểm tra</h3>
+          <ul>
+            <li>Sự kiện đến từ người dùng, từ cảm biến, từ kết nối Bluetooth hay từ thời gian?</li>
+            <li>Khi guard sai hoặc kết nối bị ngắt giữa chừng, hoạt động ở trạng thái nào? Đã ghi rõ chưa?</li>
+            <li>Có hai sự kiện giống nhau từ cùng một trạng thái mà không có guard để phân biệt không?</li>
+            <li>Có đang mô tả quy trình nhiều bước (thuộc về activity diagram) thay vì vòng đời của đối tượng không?</li>
+            <li>Việc xem thống kê và chia sẻ lên mạng xã hội có làm hoạt động đổi trạng thái không? Nếu không, chúng thuộc về mô hình nào?</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="mt">Phần kèm theo sơ đồ</h3>
+      <p><b>Bảng chuyển trạng thái</b> có cùng thông tin với sơ đồ, cột như bài giảng. Cột cuối ghi nguồn của sự kiện.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Từ trạng thái</th><th>Sự kiện</th><th>Điều kiện [guard]</th><th>Hành động / action</th><th>Đến trạng thái</th><th>Nguồn sự kiện</th></tr></thead>
+          <tbody>
+            <tr class="blank"><td></td><td></td><td></td><td></td><td></td><td>Use case, thiết bị hoặc thời gian</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt"><b>Các cặp (trạng thái, sự kiện) bị từ chối.</b> Liệt kê ít nhất 3 cặp mà hệ thống không cho phép, và ghi hệ thống bỏ qua sự kiện hay báo lỗi. Ví dụ về dạng cặp cần tìm: lệnh bắt đầu đồng bộ đến khi hoạt động còn đang được theo dõi trên đồng hồ.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Trạng thái</th><th>Sự kiện</th><th>Hệ thống xử lý</th><th>Lý do theo đề hoặc theo giả định</th></tr></thead>
+          <tbody>
+            <tr class="blank"><td></td><td></td><td>Bỏ qua hoặc báo lỗi</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 08 NHẤT QUÁN -->
+    <section class="lesson" id="nhat-quan">
+      <div class="lh">
+        <span class="num">08</span>
+        <h2>Kiểm tra nhất quán</h2>
+        <p class="lead">Bốn mô hình mô tả cùng một hệ thống. Phần này kiểm tra chúng khớp nhau.</p>
+      </div>
+      <div class="card">
+        <h3><span data-icon="git-compare"></span>Danh sách kiểm tra nhất quán</h3>
+        <label class="chk"><input type="checkbox"> Tên use case trong hai bản đặc tả trùng với tên trên sơ đồ use case.</label>
+        <label class="chk"><input type="checkbox"> Phân hệ của hai use case được đặc tả khớp với hộp phân hệ trên sơ đồ use case.</label>
+        <label class="chk"><input type="checkbox"> Actor và phân hệ trong swimlane của activity diagram có trong sơ đồ use case.</label>
+        <label class="chk"><input type="checkbox"> Từng luồng thay thế và ngoại lệ của use case được dựng activity có nhánh trong sơ đồ và có dòng trong bảng truy vết.</label>
+        <label class="chk"><input type="checkbox"> Tên trạng thái trong hậu điều kiện của hai bản đặc tả có trong state chart.</label>
+        <label class="chk"><input type="checkbox"> Mỗi sự kiện của state chart gắn với một use case có trong sơ đồ, với một thiết bị hoặc với thời gian.</label>
+        <label class="chk"><input type="checkbox"> Từng giả định trong bảng giả định xuất hiện trong ít nhất một mô hình.</label>
+        <label class="chk"><input type="checkbox"> Đại lượng và đơn vị trong quy tắc nghiệp vụ (km, phút, km/h) trùng với đề.</label>
+      </div>
+    </section>
+
+    <!-- 09 NỘP BÀI -->
+    <section class="lesson" id="nop-bai">
+      <div class="lh">
+        <span class="num">09</span>
+        <h2>Nộp bài</h2>
+        <p class="lead">Một tệp HTML duy nhất, các phần theo đúng thứ tự dưới đây. Công cụ vẽ tự chọn, nhưng sơ đồ dùng ký pháp UML như bài giảng.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3><span data-icon="layers"></span>Thứ tự các phần trong tệp</h3>
+          <ol>
+            <li>Bảng giả định (mục 03).</li>
+            <li>Sơ đồ use case, ghi chú quan hệ và ghi chú phân hệ (mục 04).</li>
+            <li>Hai bản đặc tả, mỗi bản kèm lý do chọn (mục 05).</li>
+            <li>Activity diagram và bảng truy vết (mục 06).</li>
+            <li>State chart, bảng chuyển trạng thái và bảng các cặp bị từ chối (mục 07).</li>
+            <li>Danh sách kiểm tra nhất quán đã đánh dấu (mục 08).</li>
+          </ol>
+        </div>
+        <div class="card rose">
+          <h3><span data-icon="triangle-alert"></span>Lỗi thường gặp, theo bài giảng</h3>
+          <ul>
+            <li>Vẽ use case theo thao tác kỹ thuật (Thêm, Sửa, Xoá) thay vì mục tiêu của actor.</li>
+            <li>Vẽ ngược chiều mũi tên include và extend.</li>
+            <li>Luồng chính có câu "nếu", hoặc bước có hai chủ thể.</li>
+            <li>Hành động nằm sai làn; decision có guard chồng lên nhau hoặc thiếu trường hợp.</li>
+            <li>Đặt tên trạng thái bằng động từ, thiếu trạng thái cuối, hoặc dùng state chart để mô tả quy trình nhiều bước.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="mt"><span data-icon="list-checks"></span>Yêu cầu về tệp HTML</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Yêu cầu</th><th>Chi tiết</th></tr></thead>
+          <tbody>
+            <tr><td><b>Một tệp duy nhất</b></td><td>Toàn bộ nội dung nằm trong một tệp <code>.html</code>, mở được bằng trình duyệt khi không có mạng. Không liên kết tới tệp ảnh hoặc tệp CSS để rời.</td></tr>
+            <tr><td><b>Sơ đồ</b></td><td>Nhúng vào tệp dưới dạng SVG. Công cụ vẽ tự chọn (draw.io, PlantUML, StarUML, …) miễn xuất ra được SVG, hoặc sinh viên tự vẽ SVG. Chữ trong sơ đồ là văn bản, đọc rõ khi phóng to.</td></tr>
+            <tr><td><b>Bảng</b></td><td>Bảng giả định, ghi chú quan hệ, ghi chú phân hệ, bảng truy vết, bảng chuyển trạng thái và bảng các cặp bị từ chối viết bằng thẻ <code>&lt;table&gt;</code>. Không dán ảnh chụp bảng.</td></tr>
+            <tr><td><b>Ngôn ngữ và cấu trúc</b></td><td><code>&lt;html lang="vi"&gt;</code>. Mỗi phần có tiêu đề kèm số mục (03 đến 08) như trong đề, và có liên kết điều hướng đến từng phần.</td></tr>
+            <tr><td><b>Đặc tả</b></td><td>Mỗi bản đặc tả là một bảng theo mẫu 14 mục ở mục 05, không viết thành đoạn văn.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* Biểu tượng: Lucide (https://lucide.dev), giấy phép ISC, nhúng trực tiếp để chạy offline. */
+const ICONS = {
+  'circle-check': '<circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" />',
+  'circle-help': '<circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" />',
+  'git-compare': '<circle cx="18" cy="18" r="3" /> <circle cx="6" cy="6" r="3" /> <path d="M13 6h3a2 2 0 0 1 2 2v7" /> <path d="M11 18H8a2 2 0 0 1-2-2V9" />',
+  'layers': '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />',
+  'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" />',
+  'list-checks': '<path d="M13 5h8" /> <path d="M13 12h8" /> <path d="M13 19h8" /> <path d="m3 17 2 2 4-4" /> <path d="m3 7 2 2 4-4" />',
+  'pencil-line': '<path d="M13 21h8" /> <path d="m15 5 4 4" /> <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />',
+  'repeat': '<path d="m17 2 4 4-4 4" /> <path d="M3 11v-1a4 4 0 0 1 4-4h14" /> <path d="m7 22-4-4 4-4" /> <path d="M21 13v1a4 4 0 0 1-4 4H3" />',
+  'triangle-alert': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" />',
+  'workflow': '<rect width="8" height="8" x="3" y="3" rx="2" /> <path d="M7 11v4a2 2 0 0 0 2 2h4" /> <rect width="8" height="8" x="13" y="13" rx="2" />'
+};
+const icon = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+/* thay mọi phần tử [data-icon] bằng SVG tương ứng */
+function hydrateIcons(root = document) {
+  root.querySelectorAll('[data-icon]').forEach(e => { e.outerHTML = icon(e.dataset.icon); });
+}
+hydrateIcons();
+
+/* điều hướng: đánh dấu mục đang xem */
+(function () {
+  const $$ = s => [...document.querySelectorAll(s)];
+  const links = $$('#nav a.lnk');
+  const bar = document.getElementById('progress');
+  const upd = () => { const h = document.documentElement; bar.style.width = (100 * h.scrollTop / (h.scrollHeight - h.clientHeight || 1)) + '%'; };
+  addEventListener('scroll', upd, { passive: true }); upd();
+  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach((a, i) => a.classList.toggle('on', secs[i] === e.target));
+  }), { rootMargin: '-30% 0px -60% 0px' });
+  secs.forEach(s => s && io.observe(s));
+})();
+</script>
+</body>
+</html>

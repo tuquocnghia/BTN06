@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+<title>UC-02 và State Chart</title>
+<style>
+:root {
+  --paper: #fbf7ef;
+  --paper-strong: #fffdf8;
+  --surface: #f2e8da;
+  --surface-deep: #e8dac7;
+  --ink: #302821;
+  --muted: #695b4f;
+  --coffee: #70472f;
+  --coffee-dark: #40281d;
+  --caramel: #c6813e;
+  --sage: #68765d;
+  --sage-soft: #e1e7db;
+  --rose: #a24b3d;
+  --rose-soft: #f3dfd9;
+  --line: #d9caba;
+  --shadow: 0 16px 40px rgba(64, 40, 29, 0.09);
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: radial-gradient(circle at 10% 0%, rgba(198,129,62,.10), transparent 30rem), linear-gradient(180deg, #f5ede2, var(--paper) 30rem);
+  font: 16px/1.65 "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { width: min(1140px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 60px; }
+header {
+  background: linear-gradient(130deg, #2f261f, #4d3022);
+  color: #fffaf3; border-radius: 16px; padding: 36px 40px; margin: 24px 0 32px; box-shadow: var(--shadow);
+}
+header p { color: #eadccb; margin-bottom: 0; }
+.tag { display: inline-block; border: 1px solid #dcb68c; color: #fffaf3; border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+h1,h2,h3 { line-height: 1.3; }
+h1 { color: #fffaf3; font: 700 clamp(1.8rem,4vw,2.7rem)/1.25 "Lora", Georgia, serif; margin: 12px 0; }
+h2 { color: var(--coffee-dark); font: 700 1.6rem/1.3 "Lora", Georgia, serif; border-bottom: 2px solid var(--surface-deep); padding-bottom: 8px; margin: 0 0 18px; }
+h3 { color: var(--coffee); margin: 22px 0 8px; }
+p { margin: 8px 0 14px; }
+section,.note { background: var(--paper-strong); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin: 18px 0; box-shadow: 0 8px 24px rgba(64,40,29,.035); }
+table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; }
+th,td { border: 1px solid var(--line); padding: 12px 14px; text-align: left; vertical-align: top; }
+th { background: var(--surface); color: var(--coffee-dark); }
+.scroll { overflow-x: auto; }
+.small { color: var(--muted); font-size: .92rem; }
+.callout { background: #f7ead5; border-left: 4px solid var(--caramel); padding: 12px 14px; border-radius: 10px; }
+.diagram { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--paper-strong); padding: 12px; }
+.diagram svg { width: 100%; min-width: 820px; height: auto; display: block; }
+.state { fill: var(--sage-soft); stroke: var(--sage); stroke-width: 2; }
+.event { font: 14px "Be Vietnam Pro", Arial, sans-serif; fill: var(--ink); }
+.st-label { font: 600 15px "Be Vietnam Pro", Arial, sans-serif; fill: var(--coffee-dark); }
+.arrow { fill: none; stroke: var(--coffee); stroke-width: 2; marker-end: url(#st-arrow); }
+code { background: var(--surface); padding: 1px 5px; border-radius: 4px; }
+footer { color: var(--muted); margin-top: 30px; }
+a { color: var(--coffee); }
+a:focus-visible { outline: 3px solid var(--caramel); outline-offset: 3px; }
+@media(max-width:640px) { .wrap { width: calc(100% - 24px); padding-top: 12px; } header { padding: 24px; } section,.note { padding: 16px; } th,td { padding: 10px; } }
+@media print { body { background: white; } .wrap { width: 100%; padding: 0; } header { background: white; color: var(--ink); border: 1px solid var(--line); box-shadow: none; padding: 16px; } header h1, header p { color: var(--ink); } section { break-inside: avoid; box-shadow: none; } .diagram svg { min-width: 0; } }
+</style></head><body><div class="wrap">
+<header><span class="tag">Bài tập tuần 5</span><h1>UC-02: Đồng bộ dữ liệu hoạt động qua Bluetooth</h1><p>Phân hệ Smartphone · Đặc tả Use Case (Mục 05), State Chart và hai bảng vòng đời (Mục 07).</p></header>
+<section id="sec-05-uc02"><h2>05 · Đặc tả Use Case UC-02</h2>
+<h3>Lý do lựa chọn</h3><p>Đồng bộ là cầu nối giữa dữ liệu hoạt động được ghi nhận trên Smartwatch và khả năng xem, phân tích dữ liệu trên Smartphone. Use case này được kích hoạt bởi sự kiện kết nối Bluetooth đã ghép đôi, khác với việc theo dõi hoạt động vốn được kích hoạt tự động bởi cảm biến. Việc đặc tả riêng giúp xác định rõ tính toàn vẹn dữ liệu, xử lý truyền lại và bảo toàn bản ghi khi mất kết nối.</p>
+<div class="scroll"><table><tbody>
+<tr><th>1. Mã và tên</th><td><b>UC-02: Đồng bộ dữ liệu hoạt động qua Bluetooth</b><br>Phân hệ: <b>Phân hệ Smartphone</b>.</td></tr>
+<tr><th>2. Mô tả tóm tắt</th><td>Smartphone nhận bản ghi hoạt động đang lưu tạm trên Smartwatch qua Bluetooth, kiểm tra tính toàn vẹn và xác nhận nhận dữ liệu. Khi đồng bộ thành công, bản ghi được lưu trên Smartphone và vùng lưu tạm tương ứng trên Smartwatch được giải phóng.</td></tr>
+<tr><th>3. Actor chính</th><td>Sự kiện kết nối Bluetooth đã ghép đôi giữa Smartwatch và Smartphone là tác nhân kích hoạt kỹ thuật; người dùng là bên hưởng lợi nhưng không trực tiếp khởi động luồng đồng bộ theo giả định của dự án.</td></tr>
+<tr><th>4. Actor phụ</th><td>Smartwatch (thiết bị gửi dữ liệu); không có hệ thống ngoài nào khác tham gia trực tiếp.</td></tr>
+<tr><th>5. Kích hoạt</th><td>Bluetooth báo kết nối thành công giữa hai thiết bị đã ghép đôi và Smartwatch có ít nhất một bản ghi ở trạng thái <b>Đã lưu tạm</b>.</td></tr>
+<tr><th>6. Tiền điều kiện</th><td>Hai thiết bị đã ghép đôi; Bluetooth đang kết nối; Smartwatch có bản ghi hoạt động ở trạng thái <b>Đã lưu tạm</b>; Smartphone còn khả năng lưu dữ liệu.</td></tr>
+<tr><th>7. Hậu điều kiện thành công</th><td>Bản ghi được Smartphone nhận đủ, kiểm tra toàn vẹn và lưu thành công; trạng thái chuyển lần lượt sang <b>Đã đồng bộ</b> rồi <b>Đã giải phóng lưu tạm</b> sau khi Smartwatch nhận ACK xác nhận lưu thành công.</td></tr>
+<tr><th>8. Hậu điều kiện thất bại</th><td>Giao dịch đồng bộ bị hủy hoặc không hoàn tất; bản ghi nguồn vẫn ở trạng thái <b>Đã lưu tạm</b> trên Smartwatch, không xóa dữ liệu nguồn và không đánh dấu đã đồng bộ. Smartphone không công bố bản ghi chưa được xác thực là dữ liệu hoàn chỉnh.</td></tr>
+<tr><th>9. Luồng chính</th><td><ol><li><b>Smartphone</b> khởi tạo phiên đồng bộ khi phát hiện kết nối Bluetooth đã ghép đôi và bản ghi chờ đồng bộ.</li><li><b>Smartphone</b> gửi yêu cầu đồng bộ kèm định danh bản ghi cho Smartwatch.</li><li><b>Smartwatch</b> gửi dữ liệu bản ghi theo các gói có thông tin định danh và checksum.</li><li><b>Smartphone</b> nhận các gói, ghép dữ liệu theo thứ tự và kiểm tra checksum của bản ghi.</li><li><b>Smartphone</b> lưu bản ghi đã xác thực và gửi ACK thành công cho Smartwatch.</li><li><b>Smartwatch</b> nhận ACK hợp lệ và đánh dấu bản ghi là <b>Đã đồng bộ</b>.</li><li><b>Smartwatch</b> giải phóng vùng lưu tạm của bản ghi đã được xác nhận.</li></ol></td></tr>
+<tr><th>10. Luồng thay thế</th><td><p><b>4a — Checksum không hợp lệ.</b> Tại bước 4, Smartphone yêu cầu gửi lại gói/bản ghi lỗi. Smartwatch truyền lại; số lần truyền lại tối đa 3. Nếu dữ liệu hợp lệ, quay về bước 4 rồi tiếp tục bước 5. Nếu vẫn lỗi sau 3 lần, kết thúc theo ngoại lệ 4b/không hoàn tất giao dịch và giữ bản ghi nguồn.</p><p><b>5a — Bản ghi trùng lặp.</b> Tại bước 5, Smartphone phát hiện định danh bản ghi đã được lưu và nội dung khớp. Smartphone không tạo bản ghi thứ hai, gửi ACK xác nhận bản ghi đã tồn tại; Smartwatch tiếp tục bước 6 và 7. Nếu cùng định danh nhưng nội dung không khớp, không ghi đè dữ liệu hiện có; báo lỗi và giữ bản ghi nguồn ở <b>Đã lưu tạm</b>.</p></td></tr>
+<tr><th>11. Luồng ngoại lệ</th><td><b>4b — Bluetooth đứt giữa chừng hoặc hết thời gian chờ.</b> Nếu kết nối bị ngắt hoặc không nhận phản hồi trong 10 giây (<code>GĐ-01</code>, <code>BR-03</code>), Smartphone hủy giao dịch đang dở và không gửi ACK thành công. Smartwatch giữ nguyên bản ghi ở trạng thái <b>Đã lưu tạm</b>; use case kết thúc với hậu điều kiện thất bại. Không giải phóng dữ liệu nguồn.</td></tr>
+<tr><th>12. Quy tắc nghiệp vụ</th><td><ul><li><b>BR-03:</b> Mỗi yêu cầu/pha chờ phản hồi đồng bộ có timeout 10 giây; hết hạn thì hủy giao dịch chưa hoàn tất. Nguồn: <code>GĐ-01</code>.</li><li><b>BR-04:</b> Chỉ giải phóng bản ghi lưu tạm sau khi Smartphone đã lưu và Smartwatch nhận ACK hợp lệ; checksum sai được truyền lại tối đa 3 lần. Nguồn: <code>GĐ-01</code> và quy ước thiết kế của nhóm.</li><li>Định danh bản ghi dùng để phát hiện bản ghi trùng lặp; dữ liệu trùng không được lưu thành bản ghi thứ hai.</li></ul></td></tr>
+<tr><th>13. Yêu cầu phi chức năng</th><td>Timeout đồng bộ: 10 giây. Số lần truyền lại khi checksum lỗi: tối đa 3. Tính toàn vẹn: chỉ chấp nhận bản ghi có checksum hợp lệ; không xóa bản ghi nguồn trước ACK thành công.</td></tr>
+<tr><th>14. Include, extend</th><td>Khớp quan hệ trong sơ đồ Use Case tổng thể do TV1 quản lý. Cần đối chiếu tên và quan hệ include/extend chính xác với sơ đồ đã được nhóm chốt; không tự thêm quan hệ khi chưa có bản baseline cuối cùng.</td></tr>
+</tbody></table></div>
+</section>
+<section id="sec-07"><h2>07 · State Chart — đối tượng “Hoạt động thể chất”</h2><p>Sơ đồ thể hiện vòng đời xuyên hai thiết bị. Các nhãn chuyển trạng thái theo dạng <b>Sự kiện [guard] / Action</b>. Khi Bluetooth đứt giữa quá trình đồng bộ, đối tượng quay về trạng thái <b>Đã lưu tạm</b>, không đi đến trạng thái giải phóng dữ liệu.</p>
+<div class="diagram"><svg viewBox="0 0 1100 650" role="img" aria-labelledby="st-title st-desc" xmlns="http://www.w3.org/2000/svg"><title id="st-title">State Chart vòng đời Hoạt động thể chất</title><desc id="st-desc">Khởi tạo, Đang theo dõi, Đã lưu tạm, Đang đồng bộ, Đã đồng bộ, Đã giải phóng lưu tạm; mất kết nối trong đồng bộ quay lại Đã lưu tạm.</desc><defs><marker id="st-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#425c52"/></marker></defs>
+<circle cx="65" cy="100" r="13" fill="#203d35"/><path class="arrow" d="M78 100 L135 100"/><text class="event" x="87" y="82">Tự nhận diện</text>
+<rect class="state" x="140" y="65" width="165" height="70" rx="16"/><text class="st-label" x="222" y="94" text-anchor="middle">Khởi tạo</text><text class="event" x="222" y="115" text-anchor="middle">tạo phiên</text>
+<path class="arrow" d="M305 100 L365 100"/><text class="event" x="312" y="80">đủ điều kiện</text>
+<rect class="state" x="370" y="65" width="190" height="70" rx="16"/><text class="st-label" x="465" y="94" text-anchor="middle">Đang theo dõi</text><text class="event" x="465" y="115" text-anchor="middle">thu thập dữ liệu</text>
+<path class="arrow" d="M560 100 L625 100"/><text class="event" x="570" y="80">Kết thúc / lưu</text>
+<rect class="state" x="630" y="65" width="190" height="70" rx="16"/><text class="st-label" x="725" y="94" text-anchor="middle">Đã lưu tạm</text><text class="event" x="725" y="115" text-anchor="middle">trên Smartwatch</text>
+<path class="arrow" d="M820 100 L875 100"/><text class="event" x="824" y="80">Bluetooth kết nối</text>
+<rect class="state" x="880" y="65" width="175" height="70" rx="16"/><text class="st-label" x="967" y="94" text-anchor="middle">Đang đồng bộ</text><text class="event" x="967" y="115" text-anchor="middle">gửi / kiểm tra</text>
+<path class="arrow" d="M967 135 L967 235"/><text class="event" x="980" y="180">ACK hợp lệ</text><text class="event" x="980" y="200">[đã lưu thành công]</text>
+<rect class="state" x="865" y="240" width="205" height="70" rx="16"/><text class="st-label" x="967" y="269" text-anchor="middle">Đã đồng bộ</text><text class="event" x="967" y="290" text-anchor="middle">xác nhận dữ liệu</text>
+<path class="arrow" d="M967 310 L967 400"/><text class="event" x="980" y="350">Xác nhận hoàn tất</text><text class="event" x="980" y="370">/ giải phóng tạm</text>
+<rect class="state" x="855" y="405" width="225" height="70" rx="16"/><text class="st-label" x="967" y="434" text-anchor="middle">Đã giải phóng lưu tạm</text><text class="event" x="967" y="455" text-anchor="middle">kết thúc vòng đời</text>
+<path class="arrow" d="M965 65 C965 25 725 25 725 65"/><text class="event" x="830" y="20" text-anchor="middle">Hết timeout / lỗi checksum quá 3 lần / hủy giao dịch</text><text class="event" x="830" y="39" text-anchor="middle">[chưa có ACK thành công] / giữ bản ghi nguồn</text>
+<path class="arrow" d="M880 100 C850 165 760 175 725 135"/><text class="event" x="735" y="163">Bluetooth đứt / hủy giao dịch</text><text class="event" x="735" y="182">[chưa ACK] / giữ dữ liệu</text>
+<path class="arrow" d="M465 135 C465 250 600 250 630 135"/><text class="event" x="485" y="220">Pin ≤ 2% / lưu khẩn cấp</text><text class="event" x="485" y="239">[phiên không trọn vẹn]</text>
+<path class="arrow" d="M725 135 L725 290 L855 290"/><text class="event" x="733" y="210">Đồng bộ lại</text><text class="event" x="733" y="229">[đã kết nối lại]</text>
+<text class="event" x="70" y="565">Chú thích: trạng thái cuối chỉ đạt sau ACK thành công; lỗi truyền không được phép xóa dữ liệu lưu tạm.</text><text class="event" x="70" y="590">GĐ-01: timeout 10 giây; mất kết nối giữa chừng quay về “Đã lưu tạm”.</text><text class="event" x="70" y="615">Tên trạng thái dùng đúng State Dictionary của kế hoạch dự án.</text>
+</svg></div>
+</section>
+<section id="sec-07-transition"><h2>Bảng chuyển trạng thái (6 cột)</h2><div class="scroll"><table><thead><tr><th>Trạng thái nguồn</th><th>Sự kiện</th><th>Guard / điều kiện</th><th>Hành động</th><th>Trạng thái đích</th><th>Nguồn sự kiện</th></tr></thead><tbody>
+<tr><td>Khởi tạo</td><td>Nhận diện vận động thành công</td><td>Đạt ngưỡng GĐ-05 và chưa có phiên khác</td><td>Tạo phiên, bắt đầu thu thập</td><td>Đang theo dõi</td><td>Cảm biến Smartwatch / UC-01</td></tr>
+<tr><td>Đang theo dõi</td><td>Người dùng kết thúc hoặc ngoại lệ pin yếu</td><td>Lệnh kết thúc hợp lệ; hoặc pin ≤ 2%</td><td>Dừng đo; lưu bản ghi (khẩn cấp nếu pin yếu)</td><td>Đã lưu tạm</td><td>Người dùng, thiết bị / UC-01</td></tr>
+<tr><td>Đã lưu tạm</td><td>Bluetooth kết nối đã ghép đôi</td><td>Có bản ghi chờ và kết nối sẵn sàng</td><td>Khởi tạo phiên đồng bộ, gửi yêu cầu</td><td>Đang đồng bộ</td><td>Sự kiện Bluetooth / UC-02</td></tr>
+<tr><td>Đang đồng bộ</td><td>Bluetooth ngắt hoặc timeout</td><td>Chưa nhận ACK thành công; timeout 10 giây</td><td>Hủy giao dịch, giữ nguyên bản ghi nguồn</td><td>Đã lưu tạm</td><td>Thiết bị / thời gian / UC-02, GĐ-01</td></tr>
+<tr><td>Đang đồng bộ</td><td>Checksum hợp lệ và nhận ACK lưu thành công</td><td>Smartphone đã lưu đủ bản ghi, ACK hợp lệ</td><td>Đánh dấu đồng bộ hoàn tất</td><td>Đã đồng bộ</td><td>Smartphone ↔ Smartwatch / UC-02</td></tr>
+<tr><td>Đã đồng bộ</td><td>Smartwatch nhận ACK hợp lệ và dọn vùng tạm</td><td>Bản ghi đích đã được xác nhận</td><td>Giải phóng bản lưu tạm</td><td>Đã giải phóng lưu tạm</td><td>Smartwatch / UC-02</td></tr>
+<tr><td>Đang đồng bộ</td><td>Checksum sai</td><td>Số lần truyền lại ≤ 3</td><td>Yêu cầu truyền lại, không xóa nguồn</td><td>Đang đồng bộ</td><td>Smartphone / UC-02, BR-04</td></tr>
+<tr><td>Đang đồng bộ</td><td>Phát hiện bản ghi trùng</td><td>Định danh đã có và nội dung khớp</td><td>Không tạo bản sao; gửi ACK xác nhận đã tồn tại</td><td>Đang đồng bộ → Đã đồng bộ</td><td>Smartphone / UC-02</td></tr>
+</tbody></table></div></section>
+<section id="sec-07-rejected"><h2>Các cặp (trạng thái, sự kiện) bị từ chối</h2><div class="scroll"><table><thead><tr><th>Trạng thái hiện tại</th><th>Sự kiện không hợp lệ</th><th>Lý do từ chối</th><th>Phản ứng hệ thống</th><th>Trạng thái sau xử lý</th></tr></thead><tbody>
+<tr><td>Khởi tạo</td><td>Nhận ACK đồng bộ</td><td>Chưa có bản ghi được gửi hoặc lưu trên Smartphone</td><td>Bỏ qua ACK không tương ứng; ghi log kỹ thuật nếu cần</td><td>Khởi tạo</td></tr>
+<tr><td>Đang theo dõi</td><td>Yêu cầu giải phóng lưu tạm</td><td>Phiên chưa được đồng bộ và chưa có ACK thành công</td><td>Từ chối; giữ dữ liệu phiên</td><td>Đang theo dõi</td></tr>
+<tr><td>Đã lưu tạm</td><td>Yêu cầu xóa dữ liệu nguồn như thể đã đồng bộ</td><td>Chưa có ACK thành công từ Smartphone</td><td>Từ chối; giữ bản ghi ở vùng lưu tạm</td><td>Đã lưu tạm</td></tr>
+<tr><td>Đang đồng bộ</td><td>ACK thành công khi checksum sai/chưa lưu xong</td><td>Guard toàn vẹn chưa đạt</td><td>Bỏ qua ACK không hợp lệ; yêu cầu truyền lại hoặc chờ timeout</td><td>Đang đồng bộ hoặc Đã lưu tạm khi timeout</td></tr>
+<tr><td>Đã giải phóng lưu tạm</td><td>Yêu cầu đồng bộ lại cùng bản lưu tạm đã giải phóng</td><td>Không còn bản ghi nguồn tạm để gửi</td><td>Bỏ qua; chỉ cho phép đồng bộ lại nếu có bản ghi nguồn hợp lệ khác</td><td>Đã giải phóng lưu tạm</td></tr>
+</tbody></table></div>
+</div></body></html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đặc tả UC-01 &amp; Activity Diagram — Theo dõi hoạt động thể chất</title>
+  <style>
+    :root { --paper:#fbf7ef; --surface:#f2e8da; --ink:#302821; --muted:#695b4f; --coffee:#70472f; --line:#d9caba; }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; scroll-padding-top:85px; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; }
+    .shell { width:min(1200px,calc(100% - 40px)); margin:auto; }
+    nav { position:sticky; top:0; z-index:10; background:#fffdf8; border-bottom:1px solid var(--line); }
+    nav .shell { display:flex; gap:22px; overflow-x:auto; padding-block:16px; } nav a { white-space:nowrap; text-decoration:none; font-weight:600; }
+    a { color:var(--coffee); } a:hover { text-decoration:underline; } a:focus-visible { outline:3px solid #c6813e; outline-offset:3px; }
+    #tv2-progress { position:absolute; bottom:0; height:3px; width:0; background:#c6813e; }
+    header { margin:28px 0; padding:36px; border-radius:20px; background:linear-gradient(120deg,#2f261f,#70472f); color:#fffaf3; }
+    h1,h2,h3 { line-height:1.3; } h1 { font-size:clamp(1.8rem,4vw,2.7rem); } h2 { color:#40281d; border-bottom:2px solid var(--line); padding-bottom:12px; margin-top:42px; } h3 { color:var(--coffee); }
+    .eyebrow { color:#f1c995; letter-spacing:.08em; text-transform:uppercase; font-size:.8rem; font-weight:700; }
+    .badge { display:inline-block; padding:4px 12px; border:1px solid #dcb68c; border-radius:99px; font-size:.85rem; }
+    .card { padding:20px 24px; margin:18px 0; background:#fffdf8; border:1px solid var(--line); border-radius:14px; }
+    .sage { background:#e1e7db; } .rose { background:#f3dfd9; } .muted { color:var(--muted); }
+    code { background:var(--surface); padding:2px 5px; border-radius:4px; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:12px; margin:18px 0; background:#fffdf8; }
+    table { width:100%; border-collapse:collapse; } caption { text-align:left; padding:12px 16px; font-weight:700; color:var(--coffee); }
+    th,td { padding:14px 16px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; } thead th { background:var(--surface); } tbody th { width:22%; } tr:last-child>* { border-bottom:0; }
+    li { margin-bottom:7px; } p { margin:0 0 12px; } td>:last-child,.card>:last-child { margin-bottom:0; }
+    .diagram { overflow-x:auto; background:#fffdf8; border:1px solid var(--line); border-radius:14px; padding:12px; }
+    .diagram svg { display:block; width:100%; min-width:900px; height:auto; } footer { margin:35px 0; color:var(--muted); }
+    @media(max-width:640px) { .shell { width:calc(100% - 24px); } header { padding:24px; } th,td { padding:10px; } table { min-width:620px; } }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print { nav { display:none; } body { font-size:10pt; background:white; } .shell { width:100%; } header { background:white; color:var(--ink); padding:12px; border:1px solid var(--line); } .eyebrow { color:var(--coffee); } .table-wrap,.diagram { overflow:visible; } table { min-width:0; } tr { break-inside:avoid; } thead { display:table-header-group; } .diagram svg { min-width:0; width:100%; max-height:255mm; } .diagram { break-before:page; break-inside:avoid; } }
+  </style>
+</head>
+<body>
+<nav aria-label="Điều hướng báo cáo"><div class="shell"><a href="#tv2-top">Smartwatch</a><a href="#tv2-baseline">Giả định</a><a href="#sec-05-uc01">05 · Đặc tả</a><a href="#sec-06">06 · Activity</a><a href="#tv2-trace">Truy vết</a></div><div id="tv2-progress" aria-hidden="true"></div></nav>
+<div class="shell" id="tv2-top">
+  <header><div class="eyebrow">Công nghệ phần mềm · Bài tập tuần 5</div><h1>Theo dõi hoạt động thể chất</h1><p>Phân hệ Smartwatch — Đặc tả phiên theo dõi tự động, mô hình hóa các nhánh xử lý và truy vết từ yêu cầu đến Activity Diagram.</p><span class="badge">Mục 05 &amp; 06</span></header>
+  <main>
+    <section id="tv2-baseline">
+      <h2>Giả định áp dụng cho UC-01</h2>
+      <div class="table-wrap"><table><caption>Giả định đầu vào áp dụng cho UC-01</caption><thead><tr><th scope="col">Mã</th><th scope="col">Nội dung sử dụng</th><th scope="col">Áp dụng</th></tr></thead><tbody>
+        <tr><th scope="row">GĐ-02</th><td>Đọc cảm biến và cập nhật màn hình 1 giây/lần; độ trễ hiển thị không quá 0,5 giây.</td><td>Bước 2, 4; BR-02; NFR-01; vòng lặp Activity.</td></tr>
+        <tr><th scope="row">GĐ-04</th><td>Mất GPS liên tục quá 15 giây thì ước tính bằng cảm biến bước chân/gia tốc kế; nhận ít nhất 4 vệ tinh thì dùng lại GPS.</td><td>3a; BR-UC01-03; act-d-gps, act-d-timeout.</td></tr>
+        <tr><th scope="row">GĐ-05</th><td>Nhận diện sau ≥ 30 giây vận động liên tục vượt ngưỡng; cộng cả dữ liệu 30 giây đệm vào phiên.</td><td>Kích hoạt, bước 1; BR-01; điểm đầu Activity.</td></tr>
+      </tbody></table></div>
+      <div class="card"><h3>Giả định bổ sung cho UC-01</h3><ul>
+        <li><b>GĐ-TV2-01 — Tạm dừng:</b> ngừng cộng thời gian di chuyển, quãng đường và mẫu nhịp tim của phiên; giữ dữ liệu đã ghi. Chỉ kiểm tra lệnh và pin mỗi giây. Có thể tiếp tục cùng phiên hoặc kết thúc ngay.</li>
+        <li><b>GĐ-TV2-02 — Pin yếu:</b> pin ≤ 2% lúc theo dõi hoặc tạm dừng thì lưu khẩn cấp dữ liệu đã có, gắn cờ phiên không trọn vẹn/lý do pin yếu và dừng. Giả định năng lượng dự phòng đủ cho lần lưu này.</li>
+        <li><b>GĐ-TV2-03 — Mất GPS:</b> khi mất ≤ 15 giây, giữ quãng đường gần nhất, đánh dấu tọa độ thiếu; vẫn ghi thời gian và nhịp tim. Khi mất &gt; 15 giây, ước tính đoạn mất tín hiệu từ dữ liệu gia tốc đệm, không cộng trùng; dùng bộ ước tính phù hợp loại vận động. Khi GPS trở lại, dùng vị trí mới làm mốc, không nối thẳng qua đoạn thiếu để cộng thêm quãng đường đã ước tính.</li>
+        <li><b>GĐ-TV2-04 — Công thức:</b> v = 60 × d / t với d là km, t là phút di chuyển (không gồm tạm dừng); t = 0 thì v = 0 km/h. Quãng đường ước tính được gắn nhãn, không xem là lộ trình GPS chính xác.</li>
+        <li><b>GĐ-TV2-05 — Ưu tiên:</b> mỗi chu kỳ ưu tiên pin yếu, rồi kết thúc, rồi tạm dừng/tiếp tục. Nếu chưa từng có GPS ổn định, đếm thời gian mất GPS từ lúc bắt đầu theo dõi; bộ đếm này chỉ chạy trong chế độ theo dõi và khởi động lại khi tiếp tục. Không có lệnh thì giữ chế độ hiện tại.</li>
+      </ul></div>
+    </section>
+    <section id="sec-05-uc01">
+      <h2>05 · Đặc tả UC-01: Theo dõi hoạt động thể chất</h2>
+      <div class="card sage"><h3>Lý do lựa chọn</h3><p>Theo dõi hoạt động thể chất là chức năng cốt lõi tạo ra dữ liệu sức khỏe trên đồng hồ; thiếu nó, ứng dụng không thực hiện được mục đích theo dõi của đề bài. Dữ liệu lưu tạm sau phiên là đầu vào cho đồng bộ và phân tích trên điện thoại. UC-01 được kích hoạt tự động bởi cảm biến, khác UC-02 được kích hoạt bởi kết nối Bluetooth đã ghép đôi.</p></div>
+      <div class="table-wrap"><table id="tv2-spec"><caption>Bản đặc tả 14 mục · Phân hệ Smartwatch</caption><thead><tr><th scope="col">Mục</th><th scope="col">Đặc tả</th></tr></thead><tbody>
+        <tr><th scope="row">1. Mã và tên</th><td><b>UC-01: Theo dõi hoạt động thể chất</b><br>Phân hệ: <b>Phân hệ Smartwatch</b>.</td></tr>
+        <tr><th scope="row">2. Mô tả tóm tắt</th><td>Tự động nhận diện hoạt động và theo dõi các thông số vận động, sức khỏe cho người đeo đồng hồ. Kết thúc phiên tạo bản ghi lưu tạm sẵn sàng đồng bộ sang điện thoại.</td></tr>
+        <tr><th scope="row">3. Actor chính</th><td><b>Người dùng</b>, hưởng lợi và ra lệnh tạm dừng, tiếp tục, kết thúc. Bên khởi phát tự động là cảm biến chuyển động của Smartwatch, không phải thao tác bấm bắt đầu.</td></tr>
+        <tr><th scope="row">4. Actor phụ</th><td><b>Không có actor ngoài hệ thống.</b> “Cảm biến &amp; GPS” là bộ phận phần cứng nội bộ của Smartwatch, được tách làn để phân trách nhiệm, không phải Dịch vụ bản đồ. Smartphone không trực tiếp tham gia UC-01.</td></tr>
+        <tr><th scope="row">5. Kích hoạt</th><td>Cảm biến chuyển động phát sự kiện nhận diện vận động liên tục vượt ngưỡng ít nhất 30 giây (<code>GĐ-05</code>, <code>BR-01</code>).</td></tr>
+        <tr><th scope="row">6. Tiền điều kiện</th><td>Người dùng đang đeo đồng hồ; chức năng tự nhận diện đang bật; không có phiên theo dõi khác đang hoạt động; hệ thống có khả năng lưu bản ghi. Không yêu cầu GPS ổn định, điện thoại hiện diện hoặc Bluetooth kết nối. Pin yếu được xử lý bằng ngoại lệ.</td></tr>
+        <tr><th scope="row">7. Hậu điều kiện thành công</th><td>Hoạt động ở trạng thái <b>Đã lưu tạm</b>. Bản ghi gồm định danh phiên, loại hoạt động, mốc bắt đầu/kết thúc, quãng đường (km), thời gian di chuyển (phút), tốc độ trung bình (km/h), mẫu nhịp tim (bpm), lộ trình GPS khả dụng và dấu đoạn thiếu/ước tính. Theo dõi đã dừng theo lệnh người dùng; chưa đánh dấu đã đồng bộ.</td></tr>
+        <tr><th scope="row">8. Hậu điều kiện thất bại</th><td>Phiên bị ngắt do pin ≤ 2%, không hoàn thành thời lượng vận động mong muốn. Dữ liệu đã thu được lưu khẩn cấp ở trạng thái <b>Đã lưu tạm</b>, có cờ không trọn vẹn và lý do pin yếu; theo dõi đã dừng. Lưu được dữ liệu một phần không biến việc kết thúc bất thường thành thành công (<code>GĐ-TV2-02</code>).</td></tr>
+        <tr><th scope="row">9. Luồng chính</th><td><ol>
+          <li id="tv2-step-1"><b>Phân hệ Smartwatch</b> khởi tạo phiên theo loại vận động đã nhận diện, bao gồm 30 giây dữ liệu đệm (<code>BR-01</code>); vòng đời đi từ <b>Khởi tạo</b> sang <b>Đang theo dõi</b>.</li>
+          <li id="tv2-step-2"><b>Cảm biến &amp; GPS</b> cung cấp mẫu đo của chu kỳ hiện tại gồm chuyển động, vị trí khả dụng và nhịp tim (<code>BR-02</code>).</li>
+          <li id="tv2-step-3"><b>Phân hệ Smartwatch</b> cập nhật quãng đường và lộ trình bằng GPS ổn định (<code>BR-UC01-03</code>).</li>
+          <li id="tv2-step-4"><b>Phân hệ Smartwatch</b> cập nhật bộ thông số phiên hiển thị gồm quãng đường, thời gian di chuyển, tốc độ trung bình và nhịp tim (<code>BR-02</code>, <code>BR-UC01-04</code>); chu kỳ bước 2–4 lặp mỗi giây trong thời gian chờ lệnh.</li>
+          <li id="tv2-step-5"><b>Người dùng</b> gửi lệnh kết thúc hoạt động.</li>
+          <li id="tv2-step-6"><b>Phân hệ Smartwatch</b> dừng theo dõi phiên.</li>
+          <li id="tv2-step-7"><b>Phân hệ Smartwatch</b> lưu tạm bản ghi kết quả qua <b>UC-04: Lưu tạm dữ liệu hoạt động</b>, đạt hậu điều kiện thành công.</li>
+        </ol></td></tr>
+        <tr><th scope="row">10. Luồng thay thế</th><td>
+          <p id="tv2-flow-3a"><b>3a — GPS không ổn định tại bước 3.</b></p><ol><li>Smartwatch xác định khoảng mất GPS liên tục; GPS ổn định là nhận ≥ 4 vệ tinh.</li><li>Mất ≤ 15 giây: giữ quãng đường gần nhất và đánh dấu thiếu tọa độ (<code>GĐ-TV2-03</code>).</li><li>Mất &gt; 15 giây: cập nhật quãng đường ước tính từ cảm biến bước chân/gia tốc kế, gắn nhãn ước tính (<code>GĐ-04</code>).</li><li>Cả hai nhánh quay về bước 4. Chu kỳ sau có GPS ổn định thì dùng lại GPS tại bước 3 và xóa bộ đếm mất tín hiệu; không cộng trùng quãng đường.</li></ol>
+          <p id="tv2-flow-5a"><b>5a — Tạm dừng thay cho kết thúc tại bước 5.</b></p><ol><li>Người dùng gửi lệnh tạm dừng; Smartwatch giữ dữ liệu và ngừng tích lũy thông số (<code>GĐ-TV2-01</code>).</li><li>Smartwatch kiểm tra pin và lệnh mỗi giây; không có lệnh thì tiếp tục chờ.</li><li>Lệnh tiếp tục: Smartwatch phục hồi cùng phiên, quay về bước 2 sau kiểm tra pin.</li><li>Lệnh kết thúc: chuyển bước 6. Pin ≤ 2% lúc chờ: chuyển ngoại lệ 2b.</li></ol>
+        </td></tr>
+        <tr><th scope="row">11. Luồng ngoại lệ</th><td id="tv2-flow-2b"><b>2b — Pin yếu đột ngột ≤ 2%.</b> Rẽ nhánh tại kiểm tra trước bước 2 hoặc vòng chờ 5a. Smartwatch ưu tiên dừng tích lũy, thực hiện UC-04 lưu khẩn cấp dữ liệu đã có cùng cờ không trọn vẹn/lý do pin yếu và kết thúc use case ở hậu điều kiện thất bại. Không quay lại luồng chính, không xóa dữ liệu, không tự đánh dấu <b>Đã đồng bộ</b> (<code>GĐ-TV2-02</code>, <code>GĐ-TV2-05</code>).</td></tr>
+        <tr><th scope="row">12. Quy tắc nghiệp vụ</th><td><ul>
+          <li><b>BR-01:</b> nhận diện sau ≥ 30 giây vận động liên tục vượt ngưỡng, tính cả khoảng đệm vào phiên. Nguồn: đề Mục 01, <code>GĐ-05</code>; áp dụng kích hoạt, bước 1.</li>
+          <li><b>BR-02:</b> ghi nhận/hiển thị quãng đường km, thời gian di chuyển phút, tốc độ trung bình km/h, nhịp tim bpm với chu kỳ 1 giây/lần. Nguồn: đề Mục 01, <code>GĐ-02</code>; áp dụng bước 2, 4. Công thức tốc độ làm rõ tại BR-UC01-04.</li>
+          <li><b>BR-UC01-03:</b> GPS nhận ≥ 4 vệ tinh là ổn định; mất &gt; 15 giây thì dùng quãng đường ước tính, GPS ổn định trở lại thì dùng nguồn GPS. Nguồn: <code>GĐ-04</code>, <code>GĐ-TV2-03</code>; áp dụng bước 3, luồng 3a.</li>
+          <li><b>BR-UC01-04:</b> v = 60d/t (km/h); t = 0 thì v = 0; loại thời gian tạm dừng khỏi t. Nguồn: <code>GĐ-TV2-04</code>; áp dụng bước 4.</li>
+          <li><b>BR-UC01-05:</b> tạm dừng giữ dữ liệu và định danh; tiếp tục không tạo phiên mới. Nguồn: <code>GĐ-TV2-01</code>; áp dụng 5a.</li>
+          <li><b>BR-UC01-06:</b> pin ≤ 2% ưu tiên kết thúc bất thường và lưu khẩn cấp. Nguồn: <code>GĐ-TV2-02</code>, <code>GĐ-TV2-05</code>; áp dụng 2b.</li>
+        </ul></td></tr>
+        <tr><th scope="row">13. Yêu cầu phi chức năng</th><td><b>NFR-01:</b> khi phiên đang theo dõi và cảm biến cung cấp dữ liệu, khoảng cách giữa hai lần lấy mẫu/cập nhật liên tiếp là 1 giây; từ nhận mẫu đến hiển thị chỉ số tương ứng không quá 0,5 giây (<code>GĐ-02</code>). Kiểm chứng bằng dấu thời gian lấy mẫu và hiển thị từng chu kỳ. Không hiển thị tọa độ cũ như mẫu GPS mới khi mất tín hiệu. Tạm dừng không cập nhật thông số phiên theo <code>GĐ-TV2-01</code>.</td></tr>
+        <tr><th scope="row">14. Include, extend</th><td><b>Include:</b> UC-01 → <b>UC-04: Lưu tạm dữ liệu hoạt động</b>; gọi ở bước 7 và lưu khẩn cấp 2b.<br><b>Extend:</b> không có. UC-03: Tạm dừng và tiếp tục hoạt động được nối trực tiếp với Người dùng; luồng 5a diễn tả hành vi đó trong ngữ cảnh UC-01.</td></tr>
+      </tbody></table></div>
+    </section>
+    <section id="sec-06">
+      <h2>06 · Activity Diagram và bảng truy vết</h2>
+      <p>Sơ đồ dựng từ <b>UC-01: Theo dõi hoạt động thể chất</b>. Mỗi chu kỳ kiểm tra pin trước khi lấy mẫu; nhánh GPS gom về bước 4. Vòng tạm dừng chỉ kiểm tra pin và lệnh.</p>
+      <p class="muted">Đọc từ trên xuống; đường vòng bên phải trở về chu kỳ đo.</p>
+      <div class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 2400" role="img" aria-labelledby="act-title act-desc">
+        <title id="act-title">Activity Diagram UC-01: Theo dõi hoạt động thể chất</title><desc id="act-desc">Ba làn Người dùng, Phân hệ Smartwatch, Cảm biến và GPS. Vòng đo mỗi giây, mất GPS chia theo ngưỡng 15 giây, tạm dừng và tiếp tục, kết thúc bình thường, pin yếu dẫn đến lưu khẩn cấp và kết thúc thất bại.</desc>
+        <defs><marker id="act-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#70472f"/></marker></defs>
+        <style>
+          .act-text { font:15px "Segoe UI",Arial,sans-serif; fill:#302821; text-anchor:middle; } .act-small { font:13px "Segoe UI",Arial,sans-serif; fill:#695b4f; text-anchor:middle; }
+          .act-heading { font:bold 19px "Segoe UI",Arial,sans-serif; fill:#40281d; text-anchor:middle; } .act-action { fill:#fffdf8; stroke:#70472f; stroke-width:2; rx:12; }
+          .act-decision { fill:#f2e8da; stroke:#70472f; stroke-width:2; } .act-edge { fill:none; stroke:#70472f; stroke-width:2; marker-end:url(#act-arrow); } .act-error { fill:none; stroke:#a24b3d; stroke-width:2; marker-end:url(#act-arrow); }
+        </style>
+        <rect x="5" y="5" width="1190" height="2390" rx="12" fill="#fffdf8" stroke="#d9caba"/><path d="M5 65H1195M300 5V2395M890 5V2395" stroke="#d9caba" fill="none"/><path d="M6 6H1194V64H6Z" fill="#f2e8da"/>
+        <text class="act-heading" x="150" y="42">Người dùng</text><text class="act-heading" x="595" y="42">Phân hệ Smartwatch</text><text class="act-heading" x="1040" y="42">Cảm biến &amp; GPS</text>
+        <circle id="act-start" cx="1040" cy="105" r="11" fill="#40281d"/><text class="act-small" x="1040" y="140">Nhận diện ≥ 30s (GĐ-05)</text><path class="act-edge" d="M1028 105H600V165"/>
+        <rect id="act-a1" class="act-action" x="440" y="165" width="320" height="65"/><text class="act-text" x="600" y="190">1 · Khởi tạo phiên</text><text class="act-small" x="600" y="213">Gộp dữ liệu đệm 30 giây · BR-01</text>
+        <path class="act-edge" d="M600 230V257"/><path id="act-m-cycle" class="act-decision" d="M600 257L618 275L600 293L582 275Z"/><path class="act-edge" d="M600 293V335"/>
+        <path id="act-d-pin" class="act-decision" d="M600 335L690 380L600 425L510 380Z"/><text class="act-text" x="600" y="385">Pin?</text>
+        <path class="act-error" d="M510 380H325V2100H560"/><text class="act-small" x="413" y="367">[≤ 2%] · 2b</text><path class="act-edge" d="M690 380H1040V450"/><text class="act-small" x="790" y="367">[&gt; 2%]</text>
+        <rect id="act-a2" class="act-action" x="920" y="450" width="245" height="70"/><text class="act-text" x="1042" y="477">2 · Cung cấp mẫu đo</text><text class="act-small" x="1042" y="500">GPS, gia tốc, nhịp tim</text><path class="act-edge" d="M920 485H600V555"/>
+        <path id="act-d-gps" class="act-decision" d="M600 555L690 600L600 645L510 600Z"/><text class="act-text" x="600" y="605">GPS?</text>
+        <path class="act-edge" d="M510 600H425V705"/><text class="act-small" x="430" y="575">[GPS ổn định]</text><rect id="act-a3" class="act-action" x="345" y="705" width="200" height="80"/><text class="act-text" x="445" y="730">3 · Dùng GPS</text><text class="act-small" x="445" y="752">Cập nhật đường đi;</text><text class="act-small" x="445" y="772">xóa bộ đếm mất GPS</text>
+        <path class="act-edge" d="M690 600H765V665"/><text class="act-small" x="778" y="575">[Mất tín hiệu GPS]</text><path id="act-d-timeout" class="act-decision" d="M765 665L855 710L765 755L675 710Z"/><text class="act-text" x="765" y="715">Mất bao lâu?</text>
+        <path class="act-edge" d="M675 710H625V825"/><text class="act-small" x="620" y="792">[≤ 15s]</text><rect id="act-a-gap" class="act-action" x="550" y="825" width="150" height="90"/><text class="act-text" x="625" y="852">3a · Giữ</text><text class="act-text" x="625" y="875">quãng đường</text><text class="act-small" x="625" y="897">Đánh dấu thiếu GPS</text>
+        <path class="act-edge" d="M765 755V825"/><text class="act-small" x="805" y="792">[&gt; 15s]</text><rect id="act-a-fallback" class="act-action" x="720" y="825" width="155" height="90"/><text class="act-text" x="797" y="852">3a · Ước tính</text><text class="act-text" x="797" y="875">bằng gia tốc</text><text class="act-small" x="797" y="897">Gắn nhãn ước tính</text>
+        <path class="act-edge" d="M445 785V965H582"/><path class="act-edge" d="M625 915V935H600V947"/><path class="act-edge" d="M797 915V965H618"/><path id="act-m-gps" class="act-decision" d="M600 947L618 965L600 983L582 965Z"/><path class="act-edge" d="M600 983V1015"/>
+        <rect id="act-a4" class="act-action" x="440" y="1015" width="320" height="75"/><text class="act-text" x="600" y="1043">4 · Cập nhật thông số phiên</text><text class="act-small" x="600" y="1068">km · phút · km/h · bpm / BR-02</text><path class="act-edge" d="M600 1090V1100H150V1115"/>
+        <rect id="act-a-user" class="act-action" x="25" y="1115" width="250" height="70"/><text class="act-text" x="150" y="1137">5 / 5a · Vận động hoặc gửi lệnh</text><text class="act-small" x="150" y="1162">Kết thúc / tạm dừng</text><path class="act-edge" d="M275 1150H600V1205"/>
+        <path id="act-d-command" class="act-decision" d="M600 1205L690 1255L600 1305L510 1255Z"/><text class="act-text" x="600" y="1260">Lệnh hiện tại?</text>
+        <path class="act-edge" d="M690 1255H880V275H618"/><text class="act-small" x="1000" y="1210">[Chưa có lệnh]</text><text class="act-small" x="1000" y="1233">Chờ chu kỳ 1s kế tiếp</text>
+        <path class="act-edge" d="M510 1255H365V1880H582"/><text class="act-small" x="432" y="1240">[Kết thúc]</text><path class="act-edge" d="M600 1305V1350"/><text class="act-small" x="675" y="1335">[Tạm dừng]</text>
+        <rect id="act-a-pause" class="act-action" x="440" y="1350" width="320" height="65"/><text class="act-text" x="600" y="1376">5a · Giữ dữ liệu phiên</text><text class="act-small" x="600" y="1399">Ngừng tích lũy thông số</text><path class="act-edge" d="M600 1415V1442"/>
+        <path id="act-m-pause" class="act-decision" d="M600 1442L618 1460L600 1478L582 1460Z"/><path class="act-edge" d="M600 1478V1510"/><path id="act-d-pause-pin" class="act-decision" d="M600 1510L680 1550L600 1590L520 1550Z"/><text class="act-text" x="600" y="1555">Pin?</text>
+        <path class="act-error" d="M520 1550H390V2080H580"/><text class="act-small" x="452" y="1535">[≤ 2%]</text><path class="act-edge" d="M600 1590V1597H150V1605"/><text class="act-small" x="650" y="1610">[&gt; 2%]</text>
+        <rect id="act-a-user-paused" class="act-action" x="25" y="1605" width="250" height="70"/><text class="act-text" x="150" y="1632">5a · Chờ hoặc gửi lệnh</text><text class="act-small" x="150" y="1656">Tiếp tục / kết thúc</text><path class="act-edge" d="M275 1640H600V1685"/>
+        <path id="act-d-pause-command" class="act-decision" d="M600 1685L690 1730L600 1775L510 1730Z"/><text class="act-text" x="600" y="1735">Lệnh khi dừng?</text>
+        <path class="act-edge" d="M510 1730H420V1460H582"/><text class="act-small" x="152" y="1770">[Chưa có lệnh] · Chờ 1s</text>
+        <path class="act-edge" d="M690 1730H785V1800"/><text class="act-small" x="785" y="1710">[Tiếp tục]</text><rect id="act-a-resume" class="act-action" x="705" y="1800" width="170" height="60"/><text class="act-text" x="790" y="1825">Phục hồi theo dõi</text><text class="act-small" x="790" y="1847">Cùng định danh phiên</text><path class="act-edge" d="M875 1830H885V255H600V257"/>
+        <path class="act-edge" d="M600 1775V1862"/><text class="act-small" x="647" y="1815">[Kết thúc]</text><path id="act-m-end" class="act-decision" d="M600 1862L618 1880L600 1898L582 1880Z"/><path class="act-edge" d="M600 1898V1920"/>
+        <rect id="act-a6" class="act-action" x="440" y="1920" width="320" height="50"/><text class="act-text" x="600" y="1951">6 · Dừng theo dõi</text><path class="act-edge" d="M600 1970V1985H785V2000"/>
+        <rect id="act-a7" class="act-action" x="690" y="2000" width="190" height="65"/><text class="act-text" x="785" y="2027">7 · Lưu tạm kết quả</text><text class="act-small" x="785" y="2050">Include UC-04</text><path class="act-edge" d="M785 2065V2220"/>
+        <g id="act-end-success"><circle cx="785" cy="2235" r="15" fill="#fffdf8" stroke="#40281d" stroke-width="2"/><circle cx="785" cy="2235" r="9" fill="#40281d"/></g><text class="act-text" x="785" y="2275">Thành công</text><text class="act-small" x="785" y="2298">Đã lưu tạm</text>
+        <path id="act-m-emergency" class="act-decision" d="M580 2080L600 2100L580 2120L560 2100Z"/><path class="act-error" d="M580 2120V2150"/>
+        <rect id="act-a-emergency" class="act-action" x="355" y="2150" width="290" height="90" style="fill:#f3dfd9"/><text class="act-text" x="500" y="2177">2b · Dừng và lưu khẩn cấp</text><text class="act-small" x="500" y="2200">Include UC-04 · Cờ không trọn vẹn</text><text class="act-small" x="500" y="2222">Lý do: pin yếu ≤ 2%</text><path class="act-error" d="M500 2240V2270"/>
+        <g id="act-end-failure"><circle cx="500" cy="2285" r="15" fill="#fffdf8" stroke="#a24b3d" stroke-width="2"/><circle cx="500" cy="2285" r="9" fill="#a24b3d"/></g><text class="act-text" x="500" y="2325">Thất bại · Đã lưu tạm</text><text class="act-small" x="500" y="2348">Phiên bị ngắt, dữ liệu được giữ</text>
+      </svg></div>
+      <div class="card"><h3>Giải thích ký pháp và vòng lặp</h3><p><b>Không dùng fork/join:</b> cập nhật quãng đường cần mẫu cảm biến; cập nhật thông số cần kết quả quãng đường, nên đây là chuỗi phụ thuộc. Việc tiếp nhận lệnh được mô hình hóa tại từng chu kỳ kiểm tra, không tách thành công việc song song cần join.</p><p>Hình thoi nhỏ là <b>Merge</b>; hình thoi lớn là <b>Decision</b>. Tại làn Người dùng, tiếp tục vận động hoặc chờ tương ứng với không phát lệnh mới; gửi lệnh tương ứng với bước 5 hoặc nhánh 5a. Hệ thống không chặn chờ thao tác người dùng trước khi chạy chu kỳ tiếp theo. GPS ổn định là ≥ 4 vệ tinh; “Mất tín hiệu GPS” bao gồm tín hiệu chưa đủ ổn định. Nhánh thời gian ≤ 15s và &gt; 15s loại trừ nhau, đủ trường hợp.</p><p>Vòng theo dõi thoát bằng kết thúc, tạm dừng hoặc pin yếu; vòng tạm dừng thoát bằng tiếp tục, kết thúc hoặc pin yếu. Tập lệnh mỗi chế độ chỉ gồm các lệnh hợp lệ đã nêu; chưa có lệnh thì chờ có chủ ý. Theo GĐ-TV2-05, pin được kiểm tra trước lấy mẫu trong vòng theo dõi và trước xử lý lệnh trong vòng tạm dừng.</p></div>
+      <h3 id="tv2-trace">Bảng truy vết luồng thay thế và ngoại lệ</h3>
+      <div class="table-wrap"><table id="tv2-trace-table"><thead><tr><th scope="col">Trong đặc tả</th><th scope="col">Decision và guard</th><th scope="col">Action</th><th scope="col">Merge / quay về / kết thúc</th></tr></thead><tbody>
+        <tr><th scope="row"><a href="#tv2-flow-3a">3a · Mất GPS</a></th><td><a href="#act-d-gps">act-d-gps</a>: [GPS ổn định] / [Mất tín hiệu GPS]. <a href="#act-d-timeout">act-d-timeout</a>: [≤ 15s] / [&gt; 15s].</td><td><a href="#act-a-gap">act-a-gap</a>: giữ quãng đường. <a href="#act-a-fallback">act-a-fallback</a>: ước tính gia tốc. <a href="#act-a3">act-a3</a>: dùng lại GPS.</td><td><a href="#act-m-gps">act-m-gps</a> gom về <a href="#act-a4">bước 4</a>; chu kỳ sau kiểm tra GPS lại.</td></tr>
+        <tr><th scope="row"><a href="#tv2-flow-5a">5a · Tạm dừng</a></th><td><a href="#act-d-command">act-d-command</a>: [Tạm dừng]. <a href="#act-d-pause-command">act-d-pause-command</a>: [Tiếp tục] / [Kết thúc] / [Chưa có lệnh].</td><td><a href="#act-a-pause">act-a-pause</a>: ngừng tích lũy. <a href="#act-a-user-paused">act-a-user-paused</a>: gửi lệnh. <a href="#act-a-resume">act-a-resume</a>: phục hồi.</td><td>Chờ qua <a href="#act-m-pause">act-m-pause</a>; tiếp tục qua <a href="#act-m-cycle">act-m-cycle</a> về bước 2 sau kiểm tra pin; kết thúc qua <a href="#act-m-end">act-m-end</a> đến bước 6.</td></tr>
+        <tr><th scope="row"><a href="#tv2-flow-2b">2b · Pin ≤ 2%</a></th><td><a href="#act-d-pin">act-d-pin</a> trước bước 2, <a href="#act-d-pause-pin">act-d-pause-pin</a> trong 5a: [≤ 2%] / [&gt; 2%].</td><td><a href="#act-a-emergency">act-a-emergency</a>: dừng, lưu khẩn cấp, cờ không trọn vẹn, lý do pin yếu.</td><td><a href="#act-m-emergency">act-m-emergency</a> gom hai nguồn pin yếu → <a href="#act-end-failure">act-end-failure</a>. Không trở lại luồng chính.</td></tr>
+      </tbody></table></div>
+      <h3>Đối chiếu luồng chính</h3><p>Bước 1 → <code>act-a1</code>; bước 2 → <code>act-a2</code>; bước 3 → <code>act-a3</code>; bước 4 → <code>act-a4</code>; bước 5 → <code>act-a-user</code> với lệnh kết thúc; bước 6 → <code>act-a6</code>; bước 7 → <code>act-a7</code> → <code>act-end-success</code>.</p>
+    </section>
+  </main><footer>Phân hệ Smartwatch · Đặc tả UC-01 &amp; Activity Diagram</footer>
+</div>
+<script>
+  (() => {
+    const bar = document.getElementById('tv2-progress');
+    const update = () => { const root = document.documentElement; bar.style.width = `${100 * root.scrollTop / (root.scrollHeight - root.clientHeight || 1)}%`; };
+    addEventListener('scroll', update, { passive:true }); addEventListener('resize', update); update();
+  })();
+</script>
+</body>
+</html>
